@@ -241,7 +241,6 @@ def get_products(start: str = "2022-01-01", end: str = "2022-12-31"):
           AND f.order_date BETWEEN ? AND ?
         GROUP BY f.product_id, p.name, p.category
         ORDER BY revenue DESC
-        LIMIT 10
     """, (start, end))
 
     return results

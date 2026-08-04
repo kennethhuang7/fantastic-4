@@ -78,10 +78,18 @@ export default function ProductsView() {
             */}
             <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Top 10 Products by Revenue</div>
-              {/* TODO: add your bar chart here */}
-              <div className="loading" style={{ height: 300 }}>
-                Implement the products bar chart
-              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  layout="vertical"
+                  data={products.slice(0, 10).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
+                  margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
+                >
+                  <XAxis type="number" tickFormatter={formatCurrency} />
+                  <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Bar dataKey="revenue" fill="#3b82d4" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
 
             {/*
@@ -92,9 +100,27 @@ export default function ProductsView() {
             */}
             <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Product Details</div>
-              {/* TODO: add your table here */}
-              <div className="loading" style={{ height: 300 }}>
-                Implement the products table
+              <div style={{ overflowY: 'auto', maxHeight: 300 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                      <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Name</th>
+                      <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Category</th>
+                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>Units Sold</th>
+                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((p, i) => (
+                      <tr key={p.product_id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-surface)' }}>
+                        <td style={{ padding: '8px 12px' }}>{p.name}</td>
+                        <td style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>{p.category}</td>
+                        <td style={{ padding: '8px 12px', textAlign: 'right' }}>{p.units_sold.toLocaleString()}</td>
+                        <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(p.revenue)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
