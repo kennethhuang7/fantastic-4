@@ -321,13 +321,11 @@ The backend exposes these URLs. In local development all requests go to `http://
 | `GET` | `/health` | ✅ Done | Returns service health status and database connection state |
 | `GET` | `/authorize` | ✅ Done | Returns the logged-in user identity (mock `dev_user` locally; real Snowflake username in prod) |
 | `GET` | `/docs` | ✅ Done | Auto-generated Swagger UI — interactive browser for all endpoints |
-| `GET` | `/franchise/summary` | ❌ TODO | Total revenue, total orders, unique customers, date range of data |
-| `GET` | `/franchise/orders` | ❌ TODO | Monthly order volume & revenue for a given date range |
-| `GET` | `/franchise/products` | ❌ TODO | Top 10 products by revenue for a given date range |
-| `GET` | `/franchise/customers` | ❌ TODO | Top 20 customers by total spending for a given date range |
-| `GET` | `/franchise/cities` | ❌ TODO | Revenue broken down by city and state for a given date range |
-
-All unimplemented endpoints currently return `HTTP 501 Not Implemented`. This is expected until you implement them.
+| `GET` | `/franchise/summary` | ✅ Done | Total revenue, total orders, unique customers, date range of data |
+| `GET` | `/franchise/orders` | ✅ Done | Monthly order volume & revenue for a given date range |
+| `GET` | `/franchise/products` | ✅ Done | Top 10 products by revenue for a given date range |
+| `GET` | `/franchise/customers` | ✅ Done | Top 20 customers by total spending for a given date range |
+| `GET` | `/franchise/cities` | ✅ Done | Revenue broken down by city and state for a given date range |
 
 **Date range:** All endpoints except `/franchise/summary` accept two optional query parameters: `?start=YYYY-MM-DD&end=YYYY-MM-DD`. If omitted, both default to `2022-01-01` / `2022-12-31`. `/franchise/summary` ignores date parameters — it always returns aggregate totals across the full dataset.
 
@@ -487,7 +485,6 @@ The script builds and pushes all three images tagged as `latest`. After this com
 | CORS error in the browser console | Make sure `CLIENT_VALIDATION=Dev` is set in `backend/.env` and `REACT_APP_CLIENT_VALIDATION=Dev` in `frontend/.env` |
 | Frontend opens on port 3001 instead of 3000 | Something else is already using port 3000. The backend CORS middleware allows `localhost:3001` as well as `3000`, so this is fine — just update `REACT_APP_BACKEND_URL` if needed |
 | `snow` command not found | `pip3 install snowflake-cli-labs` then `export PATH="$HOME/Library/Python/3.9/bin:$PATH"` |
-| Docker build fails on frontend | Missing `frontend/nginx.conf` — see Section 14 (Known Issues) |
 | Docker build fails (other) | Add `--no-cache` flag: `docker build --no-cache --platform linux/amd64 ...` |
 
 ### Checking Service Logs After Deployment
@@ -704,14 +701,12 @@ Each page already has the data loaded into a variable. You just need to render i
 | Path | Type | Description |
 |------|------|-------------|
 | `README.md` | File | Original project overview from the capstone facilitators — quick start, schema reference, deployment instructions |
-| `PROJECT_REPORT.md` | File | This report |
-| `AppDev Problem Statement.pdf` | File | Official Hakkoda capstone problem statement. Describes the business context (NovaCart account managers, Excel reports, etc.), the live app URL, MFA setup instructions, and what the final deliverable must include. |
-| `AppDev Execution Guide.pdf` | File | Official Hakkoda day-by-day execution guide. Contains step-by-step instructions for both roles across all 5 days, the presentation time breakdown, and a facilitator reference section with SPCS service SQL. |
-| `AppDev Lab Guide.pdf` | File | Official Hakkoda lab guide. Defines all formal requirements with IDs (API-01 through CON-11), acceptance criteria for every endpoint and frontend view, Docker/deployment requirements, and the full pre-presentation checklist. |
+| `PROJECT_REPORT.md` | File | Full technical reference report — architecture, schema, all endpoints, known issues, glossary, and complete file reference |
+| `TEAM_BRIEF.md` | File | Presentation prep document — plain-English system explanation, architecture diagrams, SQL queries, date filter behaviour, deployment steps, glossary, and panel Q&A |
 | `build-and-push.sh` | File | Shell script that builds all 3 Docker images and pushes them to the Snowflake image registry. Run on Day 4. |
 | `.gitignore` | File | Tells git which files to ignore. Excludes `.env` files, private keys, `node_modules/`, build artifacts, and virtual envs. |
 | **`backend/`** | Dir | Python FastAPI backend — the API server |
-| `backend/main.py` | File | ⭐ **Primary implementation target.** FastAPI app definition. Contains 5 endpoint stubs marked TODO, plus working `/health` and `/authorize` endpoints. |
+| `backend/main.py` | File | ✅ **Implemented.** FastAPI app definition. All 5 franchise endpoints implemented with SQL queries. Working `/health` and `/authorize` endpoints. |
 | `backend/connection.py` | File | Database abstraction. `get_connection()` returns either a SQLite or Snowflake connection based on `DATA_BACKEND` env var. `execute_query()` runs SQL and returns results as a list of dictionaries. In SPCS mode, also reads `SNOWFLAKE_HOST` (injected automatically by the platform — not needed in `.env`). Do not modify. |
 | `backend/requirements.txt` | File | Python package list. Installs FastAPI, uvicorn, Snowflake connector, and python-dotenv. |
 | `backend/Dockerfile` | File | Instructions to package the backend as a Docker container. Uses Python 3.11-slim, installs packages, starts uvicorn bound to `0.0.0.0:8000` (standard for Docker containers — the host binding is intentional here). |
@@ -722,15 +717,15 @@ Each page already has the data loaded into a variable. You just need to render i
 | `frontend/Dockerfile` | File | Two-stage Docker build: Stage 1 (Node 18-slim) compiles the React app; Stage 2 (NGINX alpine) serves the compiled static files on port 3000. **Note:** the default `ARG REACT_APP_CLIENT_VALIDATION=Snowflake` means a plain `docker build` without extra arguments produces a production build (Snowflake mode). For a local dev Docker build you would need `--build-arg REACT_APP_CLIENT_VALIDATION=Dev`. This does not affect `npm start`. |
 | `frontend/.env.example` | File | Template frontend config. Sets `REACT_APP_BACKEND_URL` (points to backend) and `REACT_APP_CLIENT_VALIDATION` (Dev or Snowflake). Copy to `.env`. |
 | `frontend/package.json` | File | Node.js package manifest. Declares all npm dependencies and the `start`/`build` scripts. |
-| `frontend/nginx.conf` | File | ⚠️ **Missing from repo.** Required by `frontend/Dockerfile` for the Docker build. Does not exist as a tracked file — see Section 14 (Known Issues) for details and a working example. |
+| `frontend/nginx.conf` | File | NGINX static-file serving config used inside the frontend Docker container. Listens on port 3000, serves the compiled React build, and routes all paths to `index.html` (required for React Router). |
 | `frontend/src/` | Dir | All React source code |
 | `frontend/src/index.js` | File | Entry point. Mounts the `<App />` component into the HTML page. |
 | `frontend/src/App.js` | File | Root component. Sets up the theme provider and URL routing. `/` and any unrecognised URL redirect to `/orders`. Routes: `/orders` → `OrdersView`, `/products` → `ProductsView`, `/customers` → `CustomersView`. |
 | `frontend/src/App.css` | File | Global CSS. Defines the colour theme using CSS variables (supports light and dark mode), and utility layout classes: `.card`, `.stat-box`, `.stat-row`, `.filter-bar`, `.grid-2`, `.loading`, `.page`, `.section-title`, `.btn-apply`. |
 | `frontend/src/pages/` | Dir | The three main dashboard pages — primary implementation target |
-| `frontend/src/pages/OrdersView.js` | File | ⭐ **TODO.** Orders & Revenue dashboard page. Data fetching is done. Needs: stat cards, monthly revenue bar chart, revenue by city bar chart. |
-| `frontend/src/pages/ProductsView.js` | File | ⭐ **TODO.** Products performance page. Data fetching is done. Needs: horizontal bar chart of top 10 products, product details table. |
-| `frontend/src/pages/CustomersView.js` | File | ⭐ **TODO.** Top customers page. Data fetching and sort logic are done. Needs: sortable HTML table. |
+| `frontend/src/pages/OrdersView.js` | File | ✅ **Implemented.** Orders & Revenue page — stat cards (all-time totals), monthly revenue bar chart, top-10 cities horizontal bar chart. Date filter applies to charts. |
+| `frontend/src/pages/ProductsView.js` | File | ✅ **Implemented.** Products performance page — horizontal bar chart (top 10), scrollable product details table (all products). Date filter applies to both. |
+| `frontend/src/pages/CustomersView.js` | File | ✅ **Implemented.** Top customers page — sortable table (Name/City/State/Orders/Total Spent), last-name sort, dynamic title, customer count in filter bar. Date filter applies. |
 | `frontend/src/components/` | Dir | Reusable UI components — do not modify |
 | `frontend/src/components/Navbar.js` | File | Top navigation bar. Shows the NovaCart logo, three nav links with active highlighting, the service status indicator, and the dark/light mode toggle. |
 | `frontend/src/components/ServiceStatus.js` | File | Coloured dot indicator in the navbar. Polls `/health` every 30 seconds. Four states: grey (checking), green (healthy), yellow (degraded), red (offline). |
@@ -756,34 +751,6 @@ Each page already has the data loaded into a variable. You just need to render i
 ## 14. Known Issues & Gotchas
 
 These are things discovered during the analysis of this project that could cause confusion or errors. Be aware of them before you start.
-
-### `frontend/nginx.conf` is missing from the repository
-
-The `frontend/Dockerfile` includes this line:
-```dockerfile
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-```
-However, `frontend/nginx.conf` **does not exist as a tracked file** in the repository. This means running `docker build` on the frontend directory will fail with a "file not found" error.
-
-**Who this affects:**
-- `npm start` (local development) — **unaffected**, it doesn't use Docker
-- `docker build ./frontend` run manually by a developer — **will fail**
-- Facilitator's `deploy-group.yml` workflow — **will fail** when building from the intern fork unless the file is created first
-- Facilitator's `prewarm.yml` workflow — **will also fail** since it runs `docker build ./frontend` directly from the starter repo itself
-
-**Resolution:** Before running `docker build` on the frontend, create `frontend/nginx.conf` with appropriate NGINX static-file serving config, or ask your facilitator if they have a standard version to provide. A minimal working example:
-```nginx
-server {
-    listen 3000;
-    root /usr/share/nginx/html;
-    index index.html;
-    location / {
-        try_files $uri /index.html;
-    }
-}
-```
-
----
 
 ### The Lab Guide and `main.py` header comment both show outdated route paths with `{franchise_id}`
 
