@@ -85,15 +85,15 @@ export default function OrdersView() {
             <div className="stat-row">
               <div className="stat-box">
                 <div className="label">Total Revenue</div>
-                <div className="value">TODO</div>
+                <div className="value">${summary?.total_revenue?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               </div>
               <div className="stat-box">
                 <div className="label">Total Orders</div>
-                <div className="value">TODO</div>
+                <div className="value">{summary?.total_orders?.toLocaleString()}</div>
               </div>
               <div className="stat-box">
                 <div className="label">Unique Customers</div>
-                <div className="value">TODO</div>
+                <div className="value">{summary?.unique_customers?.toLocaleString()}</div>
               </div>
             </div>
 
@@ -105,10 +105,15 @@ export default function OrdersView() {
             */}
             <div className="card" style={{ marginBottom: 20 }}>
               <div className="section-title" style={{ marginBottom: 16 }}>Monthly Revenue</div>
-              {/* TODO: add your chart here */}
-              <div className="loading" style={{ height: 200 }}>
-                Implement the monthly revenue chart using recharts BarChart
-              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={orders} margin={{ top: 4, right: 16, left: 16, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="month_name" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                  <YAxis tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                  <Tooltip formatter={v => [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']} />
+                  <Bar dataKey="revenue" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
 
             {/*
@@ -118,12 +123,22 @@ export default function OrdersView() {
               Show top 10 cities only.
               Hint: .slice(0, 10) on cities array
             */}
+            
             <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Revenue by City</div>
-              {/* TODO: add your chart here */}
-              <div className="loading" style={{ height: 200 }}>
-                Implement the cities chart using recharts BarChart with layout="vertical"
-              </div>
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart
+                  layout="vertical"
+                  data={cities.slice(0, 10)}
+                  margin={{ top: 4, right: 24, left: 80, bottom: 4 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                  <XAxis type="number" tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                  <YAxis type="category" dataKey="city" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={76} />
+                  <Tooltip formatter={v => [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']} />
+                  <Bar dataKey="revenue" fill="var(--blue)" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </>
         )}
