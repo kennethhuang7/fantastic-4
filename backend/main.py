@@ -228,8 +228,23 @@ def get_products(start: str = "2022-01-01", end: str = "2022-12-31"):
     """
     conn = get_connection()
 
-    # ── YOUR CODE HERE ────────────────────────────────────────────────────────
-    raise HTTPException(status_code=501, detail="Not implemented yet — your turn!")
+    results = execute_query(conn, """
+        SELECT
+            f.product_id,
+            p.name,
+            p.category,
+            SUM(f.quantity) AS units_sold,
+            SUM(f.amount)   AS revenue
+        FROM fact_orders f
+        JOIN dim_product p ON f.product_id = p.product_id
+        WHERE f.status IN ('delivered', 'shipped')
+          AND f.order_date BETWEEN ? AND ?
+        GROUP BY f.product_id, p.name, p.category
+        ORDER BY revenue DESC
+        LIMIT 10
+    """, (start, end))
+
+    return results
 
 
 @app.get("/franchise/customers", tags=["Franchise"])
@@ -252,8 +267,25 @@ def get_customers(start: str = "2022-01-01", end: str = "2022-12-31"):
     """
     conn = get_connection()
 
-    # ── YOUR CODE HERE ────────────────────────────────────────────────────────
-    raise HTTPException(status_code=501, detail="Not implemented yet — your turn!")
+    results = execute_query(conn, """
+        SELECT
+            f.customer_id,
+            c.name,
+            c.addr_city  AS city,
+            c.addr_state AS state,
+            COUNT(f.order_id) AS total_orders,
+            SUM(f.amount)     AS total_spent
+        FROM fact_orders f
+        JOIN dim_customer c ON f.customer_id = c.customer_id
+        WHERE f.status IN ('delivered', 'shipped')
+          AND c.is_current = 1
+          AND f.order_date BETWEEN ? AND ?
+        GROUP BY f.customer_id, c.name, c.addr_city, c.addr_state
+        ORDER BY total_spent DESC
+        LIMIT 20
+    """, (start, end))
+
+    return results
 
 
 @app.get("/franchise/cities", tags=["Franchise"])
@@ -275,5 +307,19 @@ def get_cities(start: str = "2022-01-01", end: str = "2022-12-31"):
     """
     conn = get_connection()
 
-    # ── YOUR CODE HERE ────────────────────────────────────────────────────────
-    raise HTTPException(status_code=501, detail="Not implemented yet — your turn!")
+    results = execute_query(conn, """
+        SELECT
+            c.addr_city  AS city,
+            c.addr_state AS state,
+            COUNT(f.order_id) AS order_count,
+            SUM(f.amount)     AS revenue
+        FROM fact_orders f
+        JOIN dim_customer c ON f.customer_id = c.customer_id
+        WHERE f.status IN ('delivered', 'shipped')
+          AND c.is_current = 1
+          AND f.order_date BETWEEN ? AND ?
+        GROUP BY c.addr_city, c.addr_state
+        ORDER BY revenue DESC
+    """, (start, end))
+
+    return results
