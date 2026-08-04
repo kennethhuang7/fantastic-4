@@ -54,9 +54,18 @@ export default function CustomersView() {
   }
 
   // Apply sort to customers array
+  // sort by last name
   const sorted = [...customers].sort((a, b) => {
     const va = a[sortBy], vb = b[sortBy];
     if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+    if (sortBy === 'name') {
+      const aParts = a.name.trim().split(' ');
+      const bParts = b.name.trim().split(' ');
+      const aLast = aParts[aParts.length - 1], aFirst = aParts[0];
+      const bLast = bParts[bParts.length - 1], bFirst = bParts[0];
+      const cmp = aLast.localeCompare(bLast) || aFirst.localeCompare(bFirst);
+      return sortDir === 'asc' ? cmp : -cmp;
+    }
     return sortDir === 'asc'
       ? String(va).localeCompare(String(vb))
       : String(vb).localeCompare(String(va));
@@ -92,7 +101,7 @@ export default function CustomersView() {
         {!loading && !error && (
           <div className="card">
             <div className="section-title" style={{ marginBottom: 16 }}>
-              Top Customers by Revenue
+              Top 20 Customers by {{ name: 'Name', city: 'City', state: 'State', total_orders: 'Orders', total_spent: 'Revenue' }[sortBy]}
             </div>
 
             {/*
