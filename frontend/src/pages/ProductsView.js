@@ -112,7 +112,7 @@ export default function ProductsView() {
                   </thead>
                   <tbody>
                     {products.map((p, i) => (
-                      <tr key={p.product_id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-surface)' }}>
+                      <tr key={p.product_id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-card)' }}>
                         <td style={{ padding: '8px 12px' }}>{p.name}</td>
                         <td style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>{p.category}</td>
                         <td style={{ padding: '8px 12px', textAlign: 'right' }}>{p.units_sold.toLocaleString()}</td>
