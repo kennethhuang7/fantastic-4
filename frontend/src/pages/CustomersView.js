@@ -54,9 +54,18 @@ export default function CustomersView() {
   }
 
   // Apply sort to customers array
+  // sort by last name
   const sorted = [...customers].sort((a, b) => {
     const va = a[sortBy], vb = b[sortBy];
     if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+    if (sortBy === 'name') {
+      const aParts = a.name.trim().split(' ');
+      const bParts = b.name.trim().split(' ');
+      const aLast = aParts[aParts.length - 1], aFirst = aParts[0];
+      const bLast = bParts[bParts.length - 1], bFirst = bParts[0];
+      const cmp = aLast.localeCompare(bLast) || aFirst.localeCompare(bFirst);
+      return sortDir === 'asc' ? cmp : -cmp;
+    }
     return sortDir === 'asc'
       ? String(va).localeCompare(String(vb))
       : String(vb).localeCompare(String(va));
@@ -92,7 +101,7 @@ export default function CustomersView() {
         {!loading && !error && (
           <div className="card">
             <div className="section-title" style={{ marginBottom: 16 }}>
-              Top Customers by Revenue
+              Top 20 Customers by {{ name: 'Name', city: 'City', state: 'State', total_orders: 'Orders', total_spent: 'Revenue' }[sortBy]}
             </div>
 
             {/*
@@ -110,13 +119,52 @@ export default function CustomersView() {
               Format total_spent with formatCurrency().
             */}
 
-            {/* TODO: add your sortable table here */}
-            <div className="loading" style={{ height: 400 }}>
-              Implement the sortable customers table.
-              Data available in: sorted (array of customer objects)
-              Sorting state: sortBy="{sortBy}", sortDir="{sortDir}"
-              Use handleSort(column) to handle header clicks.
-            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                  {[
+                    { key: 'name',         label: 'Name'        },
+                    { key: 'city',         label: 'City'        },
+                    { key: 'state',        label: 'State'       },
+                    { key: 'total_orders', label: 'Orders'      },
+                    { key: 'total_spent',  label: 'Total Spent' },
+                  ].map(({ key, label }) => (
+                    <th
+                      key={key}
+                      onClick={() => handleSort(key)}
+                      style={{
+                        padding: '8px 12px',
+                        textAlign: key === 'total_orders' || key === 'total_spent' ? 'right' : 'left',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: sortBy === key ? 'var(--accent)' : 'var(--text-muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {label}{sortIcon(key)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.slice(0, 20).map((c, i) => (
+                  <tr
+                    key={c.customer_id}
+                    style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)' }}
+                  >
+                    <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{c.name}</td>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{c.city}</td>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{c.state}</td>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', textAlign: 'right' }}>{c.total_orders}</td>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 600, textAlign: 'right' }}>{formatCurrency(c.total_spent)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
           </div>
         )}
