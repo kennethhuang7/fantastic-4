@@ -2,7 +2,7 @@
 
 > **Audience:** This report is written for all team members regardless of technical background.
 > Technical detail is included where needed, but every section begins with a plain-English summary.
-> **Last verified against:** all source files in the repository root.
+> **Last verified against:** all source files in the repository root + official PDF documents (Problem Statement, Execution Guide, Lab Guide) from Hakkoda.
 
 ---
 
@@ -28,7 +28,7 @@
 
 ## 1. What Are We Building?
 
-**The client is NovaCart**, an e-commerce company. They have years of order data sitting in a database — customers, purchases, products, revenue — but no way to look at it visually or ask questions about it.
+**The client is NovaCart**, a growing online retailer that sells thousands of products to customers in 30+ countries. They have years of order data sitting in a database — customers, purchases, products, revenue — but no way to look at it visually or ask questions about it. Account managers are currently stuck relying on ad-hoc Excel reports emailed every Friday that are always at least a week out of date.
 
 **Our job:** Build them a web dashboard so their account managers can log in and see:
 - How much revenue was generated and when
@@ -39,7 +39,7 @@ The final product is a **three-page web application** accessible from a browser:
 
 | Page | URL | What it shows |
 |------|-----|---------------|
-| Orders | `/orders` | Revenue totals, monthly revenue chart, revenue by city chart |
+| Orders | `/orders` | Revenue totals, monthly revenue chart, revenue by city/country chart |
 | Products | `/products` | Top 10 products bar chart + product details table |
 | Customers | `/customers` | Sortable table of top 20 customers by total spending |
 
@@ -47,37 +47,56 @@ The app has a dark/light mode toggle, a date range filter on each page, and a li
 
 **What's already built for you:** The project skeleton, database, all infrastructure, routing, styling, and the data-fetching logic in each page. **What you build:** The SQL queries that retrieve the data (backend) and the charts/tables that display it (frontend).
 
+**Live deployed skeleton (pre-built for reference):**
+`https://ntamyoub-se58322-snowflake-containers-adrianm.snowflakecomputing.app`
+
+> ⚠️ **Before Day 1:** You will need MFA (Multi-Factor Authentication) to log into Snowflake. Download **Google Authenticator**, **Microsoft Authenticator**, or **Duo** on your phone before the capstone starts. You'll be prompted to set it up on first login — it's a one-time step.
+
 ---
 
 ## 2. Roles & Responsibilities
 
-This capstone has two distinct roles. Each team will have both.
+This capstone has two distinct roles. Each team will have both. **Both roles should read the entire Lab Guide** — the developer needs to understand what the consultant will present, and the consultant needs to understand what the developer will build.
 
 ### App Developer
 Writes the actual code. Responsible for:
 - **Backend:** Implement 5 API endpoints in `backend/main.py` — each one runs a SQL query and returns data as JSON
 - **Frontend:** Implement the UI in the 3 page files in `frontend/src/pages/` — charts, tables, and stat cards
+- **Docker images:** Build and push all three Docker images via `build-and-push.sh` on Day 4
+- **API documentation:** Ensure `/docs` (Swagger UI) clearly documents every endpoint
 
 ### App Consultant
 Does not write code. Responsible for:
-- **Requirements Document** (end of Day 1): Define what the dashboard must do before any code is written. Used as the acceptance criteria.
-- **Endpoint Validation** (Days 2–3): Test each API endpoint against the requirements as the developer completes them. Sign off when correct.
-- **Solution Design Document** (Day 4): Write up how the system was built — architecture, decisions made, what each component does.
-- **Client Presentation** (Day 5): Lead the final demo and presentation to the "client" (facilitators).
+- **Requirements Document** (end of Day 1): Define what the dashboard must do before any code is written. Used as the acceptance criteria. Must be version-controlled in GitHub.
+- **Daily standup** (every morning, 15 min): Lead the three-question standup — What did I do yesterday? What am I doing today? Is anything blocking me? Help unblock the developer if needed.
+- **Endpoint Validation** (Days 2–3): When the developer marks an endpoint done, test it against the requirements doc via Swagger UI. If it doesn't match, it's not done. Sign off when correct.
+- **Solution Design Document** (Day 4, 1–2 pages): Architecture diagram, at least two technology decisions and trade-offs, written for a non-technical audience.
+- **Client Presentation** (Day 5): Lead the final 10-minute presentation + 5-minute Q&A. Both roles speak.
 
-> Both roles are expected to understand the project well enough to explain it to anyone.
+> Both roles are expected to understand the project well enough to answer questions from the panel about anything — not just their own deliverables.
 
 ---
 
 ## 3. Capstone Timeline
 
-| Day | App Developer | App Consultant |
-|-----|---------------|----------------|
-| Day 1 | Set up local environment, explore the codebase, read `main.py` and understand the TODO endpoints | Write the Requirements Document |
-| Day 2 | Implement backend endpoints (`/summary`, `/orders`, `/products`) | Validate completed endpoints against requirements |
-| Day 3 | Implement remaining endpoints (`/customers`, `/cities`) + begin frontend UI | Continue validation, begin Solution Design Document |
-| Day 4 | Complete frontend UI, run `build-and-push.sh` to deploy to SPCS | Finish Solution Design Document |
-| Day 5 | Support the demo | Lead the client presentation |
+| Day | Goal | App Developer | App Consultant |
+|-----|------|---------------|----------------|
+| **Day 1** | Both aligned on problem; requirements drafted | Clone repo, set up local environment, verify `http://localhost:8000/docs` loads, review `main.py` TODOs | Write the Requirements Document (all endpoints + views with acceptance criteria); align and sign off with developer by end of day |
+| **Day 2** | 2 working endpoints; architecture diagram started | Implement `/franchise/summary` and `/franchise/orders` with real Snowflake data | Validate each endpoint via Swagger UI against requirements; draft architecture diagram |
+| **Day 3** | All 5 endpoints working; frontend connected to API; first end-to-end data visible | Implement `/franchise/products`, `/franchise/customers`, `/franchise/cities`; wire React pages to API | Validate remaining endpoints; solution design doc at 80%; presentation outline drafted |
+| **Day 4** | App deployed on SPCS; presentation rehearsed | Run `build-and-push.sh`; notify facilitator; verify deployment at public URL; fix any bugs; update README | Finish Solution Design Document; build slide deck; full 10-minute rehearsal with developer |
+| **Day 5** | Deliver 10-min presentation + 5-min Q&A | Lead the live demo portion (3:00–6:00 in the presentation) | Lead presentation (problem, architecture, trade-offs, next steps); lead Q&A |
+
+### Presentation Structure (Day 5)
+
+| Time | Content | Who |
+|------|---------|-----|
+| 0:00 – 1:00 | The problem — what NovaCart account managers needed and why | App Consultant |
+| 1:00 – 3:00 | The solution — architecture walkthrough with diagram | App Consultant |
+| 3:00 – 6:00 | Live demo — deployed app, all three views, API docs at `/docs` | App Developer |
+| 6:00 – 8:00 | Trade-offs — two decisions made, alternatives considered, honest downsides | Both |
+| 8:00 – 10:00 | Next steps — what NovaCart should build next and why | App Consultant |
+| 10:00 – 15:00 | Q&A — panel asks questions of both roles | Both |
 
 ---
 
@@ -312,9 +331,13 @@ All unimplemented endpoints currently return `HTTP 501 Not Implemented`. This is
 
 **Date range:** All endpoints except `/franchise/summary` accept two optional query parameters: `?start=YYYY-MM-DD&end=YYYY-MM-DD`. If omitted, both default to `2022-01-01` / `2022-12-31`. `/franchise/summary` ignores date parameters — it always returns aggregate totals across the full dataset.
 
+> ⚠️ **Lab Guide vs Starter Code discrepancy — read this:** The official Lab Guide (PDF) defines the endpoints as `GET /franchise/{franchise_id}/summary`, `GET /franchise/{franchise_id}/orders`, etc. — with a `{franchise_id}` path parameter. The actual starter code in `backend/main.py` implements them **without** that parameter: `GET /franchise/summary`, `GET /franchise/orders`, etc. The `frontend/src/utils/api.js` also calls the no-parameter versions. **Follow the starter code routes.** The Lab Guide routes represent an earlier design that was simplified. The panel may ask about this — be ready to explain it.
+
+> ⚠️ **Lab Guide also calls the 5th endpoint `/countries`** (as in `GET /franchise/{id}/countries`). The starter code implements it as `/franchise/cities`. Again, follow the code — the `api.js` calls `getCities()` → `/franchise/cities`. Use `/cities`.
+
 ### Expected Response Shapes
 
-These are the exact JSON formats each endpoint must return. The frontend is already written to consume this exact structure — if the shape is different, the UI will break.
+These are the exact JSON formats each endpoint must return. **These shapes come from the starter code's `main.py` docstrings and from what `frontend/src/utils/api.js` and the page components expect.** The Lab Guide PDF shows different field names — follow the code, not the PDF. Differences are noted below each shape.
 
 **`/franchise/summary`**
 ```json
@@ -325,6 +348,7 @@ These are the exact JSON formats each endpoint must return. The frontend is alre
   "date_range": { "start": "2022-01-01", "end": "2022-12-31" }
 }
 ```
+> 📄 *Lab Guide difference:* PDF uses `"active_customers"` (not `"unique_customers"`) and includes a `"franchise_id"` field. The code uses `unique_customers` — use that.
 
 **`/franchise/orders`** — returns an array, one object per month
 ```json
@@ -333,6 +357,7 @@ These are the exact JSON formats each endpoint must return. The frontend is alre
   { "month": "2022-02", "month_name": "February", "order_count": 910, "revenue": 141230.00 }
 ]
 ```
+> 📄 *Lab Guide difference:* PDF omits `"month_name"`. The frontend `OrdersView.js` uses `XAxis dataKey="month_name"` — include it.
 
 **`/franchise/products`** — returns an array, one object per product
 ```json
@@ -341,6 +366,7 @@ These are the exact JSON formats each endpoint must return. The frontend is alre
     "units_sold": 342, "revenue": 30578.58 }
 ]
 ```
+> 📄 *Lab Guide difference:* PDF uses `"product_name"` (not `"name"`). Use `"name"` — that's what the frontend expects.
 
 **`/franchise/customers`** — returns an array, one object per customer
 ```json
@@ -349,6 +375,7 @@ These are the exact JSON formats each endpoint must return. The frontend is alre
     "state": "TX", "total_orders": 14, "total_spent": 1240.50 }
 ]
 ```
+> 📄 *Lab Guide difference:* PDF uses `"first_name"`, `"last_name"`, `"country"` instead of `"name"`, `"city"`, `"state"`. The frontend `CustomersView.js` sorts and renders by `name`, `city`, `state` — use those field names.
 
 **`/franchise/cities`** — returns an array, one object per city
 ```json
@@ -356,6 +383,7 @@ These are the exact JSON formats each endpoint must return. The frontend is alre
   { "city": "Austin", "state": "TX", "order_count": 420, "revenue": 38430.00 }
 ]
 ```
+> 📄 *Lab Guide difference:* PDF has no equivalent for this endpoint (it uses `/countries` instead). This shape is defined by the code only.
 
 ---
 
@@ -462,6 +490,29 @@ The script builds and pushes all three images tagged as `latest`. After this com
 | Docker build fails on frontend | Missing `frontend/nginx.conf` — see Section 14 (Known Issues) |
 | Docker build fails (other) | Add `--no-cache` flag: `docker build --no-cache --platform linux/amd64 ...` |
 
+### Checking Service Logs After Deployment
+
+If something is broken after deployment, check the container logs directly in Snowsight:
+
+```sql
+-- Check backend container logs (last 50 lines)
+CALL SYSTEM$GET_SERVICE_LOGS('FRONTEND_SERVICE_GROUP<N>', '0', 'backend', 50);
+
+-- Check frontend container logs
+CALL SYSTEM$GET_SERVICE_LOGS('FRONTEND_SERVICE_GROUP<N>', '0', 'frontend', 50);
+
+-- Verify images are in the registry
+CALL SYSTEM$REGISTRY_LIST_IMAGES('/<db>/app/<repo>');
+
+-- Check what services exist and their status
+SHOW SERVICES;
+
+-- Get your service's public URL
+SHOW ENDPOINTS IN SERVICE FRONTEND_SERVICE_GROUP<N>;
+```
+
+Common post-deployment issues: wrong environment variable names, CORS errors if `CLIENT_VALIDATION` is missing, `bcrypt` ELF format error (ensure `.dockerignore` excludes compiled binaries).
+
 ---
 
 ## 11. What Is Already Done
@@ -495,7 +546,61 @@ All three page files already handle: fetching data from the API, showing a loadi
 
 ## 12. What Still Needs to Be Implemented
 
-### Summary Checklist
+### Official Requirements Checklist (from Lab Guide)
+
+Use this on Day 4 to confirm you've met every requirement before presenting:
+
+**API Requirements**
+- [ ] `API-01` FastAPI with Python 3.11+
+- [ ] `API-02` Snowflake connection via environment variables — no hardcoded credentials
+- [ ] `API-03` SPCS OAuth via `/snowflake/session/token` (automatic — already in `connection.py`)
+- [ ] `API-04` Swagger docs at `/docs` — every endpoint documented
+- [ ] `API-05` `/health` endpoint working
+- [ ] `API-06` All error responses return JSON with a message and HTTP status code
+- [ ] `—` `GET /franchise/summary` implemented
+- [ ] `—` `GET /franchise/orders` implemented
+- [ ] `—` `GET /franchise/products` implemented
+- [ ] `—` `GET /franchise/customers` implemented
+- [ ] `—` `GET /franchise/cities` implemented
+
+**Frontend Requirements**
+- [ ] `FE-01` React 18
+- [ ] `FE-02` All API calls routed via `/api/*` (already wired in `api.js`)
+- [ ] `FE-03` SPCS OAuth flow working (already wired via `/authorize`)
+- [ ] `FE-04` Loading states and error handling (already done in scaffolding)
+- [ ] `FE-05` Navbar with service status indicator (already done)
+- [ ] `FE-06` Dark mode toggle (already done)
+- [ ] `—` View 1: Orders Overview — stat cards, monthly chart, city/country chart
+- [ ] `—` View 2: Product Performance — top products chart, product details table
+- [ ] `—` View 3: Customer List — sortable table
+
+**Deployment Requirements**
+- [ ] `DEP-01` Backend Docker image built for `linux/amd64`
+- [ ] `DEP-02` Frontend Docker image built for `linux/amd64`
+- [ ] `DEP-03` NGINX router image routing `/api/*` to backend
+- [ ] `DEP-04` All 3 images pushed to Snowflake Image Repository via `build-and-push.sh`
+- [ ] `DEP-05` README updated with deployment instructions
+
+**App Consultant Requirements**
+- [ ] `CON-01` Requirements document signed off by developer before Day 2
+- [ ] `CON-02` Requirements document covers every endpoint and view with acceptance criteria
+- [ ] `CON-03` Requirements document committed to the GitHub repository
+- [ ] `CON-04` Solution Design Document completed by Day 4 (1–2 pages)
+- [ ] `CON-05` Architecture diagram in the Solution Design Document
+- [ ] `CON-06` At least two technology decisions with trade-offs explained
+- [ ] `CON-07` Solution Design Document written for a non-technical audience
+- [ ] `CON-08` Presentation is 10 min + 5 min Q&A
+- [ ] `CON-09` Both roles have speaking parts
+- [ ] `CON-10` Live demo of the deployed application included
+- [ ] `CON-11` Presentation covers: problem, solution, architecture, two trade-offs, next steps
+
+**Stretch Goals (if time allows)**
+- [ ] 6th endpoint: `GET /franchise/customers/{customer_id}/history` — full order and address history for a specific customer (SCD Type 2 data from `dim_customer`)
+- [ ] 4th frontend view: Customer detail page — clicking a customer in the list opens their full order history
+
+---
+
+### Implementation Checklist (Quick Reference)
 
 | # | Task | Role | File |
 |---|------|------|------|
@@ -510,7 +615,7 @@ All three page files already handle: fetching data from the API, showing a loadi
 | 9 | Products page — top products bar chart | App Developer | `frontend/src/pages/ProductsView.js` |
 | 10 | Products page — product details table | App Developer | `frontend/src/pages/ProductsView.js` |
 | 11 | Customers page — sortable customers table | App Developer | `frontend/src/pages/CustomersView.js` |
-| 12 | Requirements Document | App Consultant | — |
+| 12 | Requirements Document (in GitHub) | App Consultant | — |
 | 13 | Endpoint validation (sign off each of #1–5) | App Consultant | — |
 | 14 | Solution Design Document | App Consultant | — |
 | 15 | Client presentation | App Consultant | — |
@@ -585,10 +690,10 @@ Each page already has the data loaded into a variable. You just need to render i
 
 ### App Consultant Deliverables
 
-- [ ] **Requirements Document** — due end of Day 1. Written before any code. Defines what the dashboard must show, how it should behave, and what counts as "done" for each feature.
-- [ ] **Endpoint validation** — as the developer completes each backend endpoint, test it via Swagger UI (`/docs`) and confirm it matches the requirements. Sign it off.
-- [ ] **Solution Design Document** — due Day 4. Describes what was built, how the components connect, and any design decisions made.
-- [ ] **Client presentation** — Day 5. Lead a live demo of the working application to the facilitators (acting as the NovaCart client).
+- [ ] **Requirements Document** — due end of Day 1. Written before any code. Defines what the dashboard must show, how it should behave, and what counts as "done" for each feature. Must be committed to the GitHub repo (requirement `CON-03`).
+- [ ] **Endpoint validation** — as the developer completes each backend endpoint, test it via Swagger UI (`/docs`) and confirm it matches the requirements doc. If it doesn't match, it is not done. Sign it off.
+- [ ] **Solution Design Document** — due Day 4, 1–2 pages. Must include: architecture diagram, at least two technology decisions with trade-offs, and be written so a non-technical NovaCart account manager can understand the summary section.
+- [ ] **Client presentation** — Day 5. 10 minutes + 5 minutes Q&A. Both roles speak. Covers: the problem, solution, architecture walkthrough, two trade-offs, and recommended next steps for NovaCart.
 
 ---
 
@@ -600,6 +705,9 @@ Each page already has the data loaded into a variable. You just need to render i
 |------|------|-------------|
 | `README.md` | File | Original project overview from the capstone facilitators — quick start, schema reference, deployment instructions |
 | `PROJECT_REPORT.md` | File | This report |
+| `AppDev Problem Statement.pdf` | File | Official Hakkoda capstone problem statement. Describes the business context (NovaCart account managers, Excel reports, etc.), the live app URL, MFA setup instructions, and what the final deliverable must include. |
+| `AppDev Execution Guide.pdf` | File | Official Hakkoda day-by-day execution guide. Contains step-by-step instructions for both roles across all 5 days, the presentation time breakdown, and a facilitator reference section with SPCS service SQL. |
+| `AppDev Lab Guide.pdf` | File | Official Hakkoda lab guide. Defines all formal requirements with IDs (API-01 through CON-11), acceptance criteria for every endpoint and frontend view, Docker/deployment requirements, and the full pre-presentation checklist. |
 | `build-and-push.sh` | File | Shell script that builds all 3 Docker images and pushes them to the Snowflake image registry. Run on Day 4. |
 | `.gitignore` | File | Tells git which files to ignore. Excludes `.env` files, private keys, `node_modules/`, build artifacts, and virtual envs. |
 | **`backend/`** | Dir | Python FastAPI backend — the API server |
@@ -677,21 +785,33 @@ server {
 
 ---
 
-### The `main.py` file header comment shows outdated route paths
+### The Lab Guide and `main.py` header comment both show outdated route paths with `{franchise_id}`
 
-The docstring at the top of `backend/main.py` lists routes as:
+The official **Lab Guide PDF** defines all endpoints as:
+```
+GET /franchise/{franchise_id}/summary
+GET /franchise/{franchise_id}/orders
+...
+```
+The docstring at the top of `backend/main.py` also shows:
 ```
 GET /franchise/{id}/summary
 GET /franchise/{id}/orders
 ...
 ```
-The actual route decorators in the code beneath it are:
+The actual route decorators in the code are:
 ```
 GET /franchise/summary
 GET /franchise/orders
 ...
 ```
-**There is no `{id}` parameter.** The comment block is a leftover from an earlier design. Always follow the actual `@app.get(...)` decorators in the code, not the comment at the top.
+**There is no `{id}` parameter in the starter code.** Both the Lab Guide and the comment block reflect an earlier design. The frontend `api.js` was also built without this parameter. **Always follow the actual `@app.get(...)` decorators in the code.** Be prepared to explain this discrepancy during the Q&A — the panel may ask about it.
+
+---
+
+### The Lab Guide calls the 5th endpoint `/countries`; the starter code uses `/cities`
+
+The Lab Guide defines the 5th endpoint as `GET /franchise/{franchise_id}/countries`. The starter code implements it as `GET /franchise/cities`. The frontend `api.js` calls `getCities()` → `/franchise/cities`. **Use `/cities`.** The underlying data (from `dim_customer.addr_city` / `addr_state`) is US city/state data, not country-level data. The Lab Guide name is from the earlier design which used international data.
 
 ---
 
@@ -708,6 +828,25 @@ Since local development always uses SQLite, write `?` in your queries. If you ar
 ### Default date range is hardcoded to 2022
 
 All five endpoints default to `start=2022-01-01` and `end=2022-12-31` if no date parameters are provided. The local SQLite database only contains data from 2022, so this is correct for local development. In production on Snowflake, the actual date range of data may differ.
+
+---
+
+### Execution Guide code snippet imports `snowflake_connection` — the actual file is `connection.py`
+
+The Execution Guide (PDF) includes a code example showing:
+```python
+from snowflake_connection import get_connection
+```
+The actual file in the starter repo is named **`connection.py`**, not `snowflake_connection.py`. If you copy this snippet directly, you will get an `ImportError`. The correct import (already in `main.py`) is:
+```python
+from connection import get_connection, execute_query
+```
+
+---
+
+### Execution Guide says to build `/health` on Day 2 — it's already implemented
+
+The Execution Guide tells developers to start with `/health` and `/franchise/{id}/summary` on Day 2. In the actual starter code, `/health` is **already fully implemented** and working. You do not need to build it — only implement the 5 `TODO` endpoints in `main.py`.
 
 ---
 
