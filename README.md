@@ -156,3 +156,6 @@ export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 ```bash
 docker build --no-cache --platform linux/amd64 ...
 ```
+
+## Team Members (testing git)
+Danny Mendler
