@@ -6,6 +6,7 @@ Built with FastAPI. Auto-generated docs at: http://localhost:8000/docs
 Endpoints:
   GET /health                                  — service health check
   GET /authorize                               — SPCS OAuth flow
+  GET /franchise/{id}/home                     - data for home view dashboard
   GET /franchise/{id}/summary                  — overview stats
   GET /franchise/{id}/orders                   — monthly order volume and revenue
   GET /franchise/{id}/products                 — top products by revenue
@@ -121,6 +122,100 @@ def authorize(request: Request):
 
 
 # ── Franchise endpoints ───────────────────────────────────────────────────────
+
+@app.get("/franchise/home", tags=["Franchise"])
+def get_home():
+    """
+    Returns all data needed to render the homepage dashboard in a single request:
+      - summary:            total revenue, orders, unique customers, date range
+      - monthly_revenue:    revenue per month across the full data range
+      - status_breakdown:   order count per status
+      - top_categories:     top 5 product categories by revenue
+      - recent_orders:      5 most recent orders
+    """
+    conn = get_connection()
+
+    # Overall summary
+    summary_rows = execute_query(conn, """
+        SELECT
+            COUNT(DISTINCT order_id)    AS total_orders,
+            ROUND(SUM(amount), 2)       AS total_revenue,
+            COUNT(DISTINCT customer_id) AS unique_customers,
+            MIN(order_date)             AS start_date,
+            MAX(order_date)             AS end_date
+        FROM fact_orders
+        WHERE status IN ('delivered', 'shipped')
+    """)
+    s = summary_rows[0]
+
+    # Monthly revenue trend — most recent year only
+    pad_month = "LPAD(CAST(d.month AS VARCHAR), 2, '0')" if DATA_BACKEND == "snowflake" else "printf('%02d', d.month)"
+    monthly = execute_query(conn, f"""
+        SELECT
+            d.year || '-' || {pad_month} AS month,
+            d.month_name,
+            d.year,
+            COUNT(f.order_id)       AS order_count,
+            ROUND(SUM(f.amount), 2) AS revenue
+        FROM fact_orders f
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE f.status IN ('delivered', 'shipped')
+          AND d.year = (SELECT MAX(year) FROM dim_date)
+        GROUP BY d.year, d.month, d.month_name
+        ORDER BY d.month
+    """)
+
+    # Order status breakdown (all statuses)
+    status_breakdown = execute_query(conn, """
+        SELECT status, COUNT(order_id) AS order_count
+        FROM fact_orders
+        GROUP BY status
+        ORDER BY order_count DESC
+    """)
+
+    # Top 5 categories by revenue
+    top_categories = execute_query(conn, """
+        SELECT
+            p.category,
+            COUNT(f.order_id)       AS order_count,
+            ROUND(SUM(f.amount), 2) AS revenue
+        FROM fact_orders f
+        JOIN dim_product p ON f.product_id = p.product_id
+        WHERE f.status IN ('delivered', 'shipped')
+        GROUP BY p.category
+        ORDER BY revenue DESC
+        LIMIT 5
+    """)
+
+    # 5 most recent orders
+    recent_orders = execute_query(conn, """
+        SELECT
+            f.order_id,
+            f.order_date,
+            c.name  AS customer_name,
+            p.name  AS product_name,
+            f.amount,
+            f.status
+        FROM fact_orders f
+        JOIN dim_customer c ON f.customer_id = c.customer_id AND c.is_current = 1
+        JOIN dim_product  p ON f.product_id  = p.product_id
+        ORDER BY f.order_date DESC
+        LIMIT 5
+    """)
+
+    return {
+        "summary": {
+            "total_revenue":    s["total_revenue"] or 0,
+            "total_orders":     s["total_orders"],
+            "unique_customers": s["unique_customers"],
+            "date_range":       {"start": s["start_date"], "end": s["end_date"]},
+        },
+        "monthly_revenue":  monthly,
+        "status_breakdown": status_breakdown,
+        "top_categories":   top_categories,
+        "recent_orders":    recent_orders,
+    }
+
 
 @app.get("/franchise/summary", tags=["Franchise"])
 def get_summary():

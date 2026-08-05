@@ -9,6 +9,7 @@ export default function Navbar() {
   const { dark, toggle } = useTheme();
 
   const links = [
+    { label: '🏠 Home',      path: '/'          },
     { label: '📊 Orders',    path: '/orders'    },
     { label: '📦 Products',  path: '/products'  },
     { label: '👤 Customers', path: '/customers' },

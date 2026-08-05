@@ -19,6 +19,7 @@ async function apiFetch(path) {
 }
 
 export async function authorize()       { return apiFetch('/authorize'); }
+export async function getHome()         { return apiFetch('/franchise/home'); }
 export async function getHealth()       { return apiFetch('/health'); }
 export async function getSummary()      { return apiFetch('/franchise/summary'); }
 export async function getOrders(s, e)   { return apiFetch(`/franchise/orders?start=${s}&end=${e}`); }
