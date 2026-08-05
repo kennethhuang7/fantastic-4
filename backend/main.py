@@ -29,7 +29,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
-from connection import get_connection, execute_query
+from connection import get_connection, execute_query, DATA_BACKEND
 
 load_dotenv()
 
@@ -192,9 +192,11 @@ def get_orders(start: str = "2022-01-01", end: str = "2022-12-31"):
     """
     conn = get_connection()
 
-    results = execute_query(conn, """
+    # printf() is SQLite-only; Snowflake uses LPAD
+    pad_month = "LPAD(CAST(d.month AS VARCHAR), 2, '0')" if DATA_BACKEND == "snowflake" else "printf('%02d', d.month)"
+    results = execute_query(conn, f"""
         SELECT
-            d.year || '-' || printf('%02d', d.month) AS month,
+            d.year || '-' || {pad_month} AS month,
             d.month_name,
             COUNT(f.order_id) AS order_count,
             SUM(f.amount)     AS revenue
