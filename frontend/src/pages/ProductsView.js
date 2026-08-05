@@ -150,14 +150,14 @@ export default function ProductsView() {
                   )}
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={Math.max(300, chartLimit * 30)}>
                 <BarChart
                   layout="vertical"
                   data={products.slice(0, chartLimit).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
                   margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
                 >
                   <XAxis type="number" tickFormatter={formatCurrency} />
-                  <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
+                  <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 12 }} />
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Bar dataKey="revenue" fill="#3b82d4" radius={[0, 4, 4, 0]} />
                 </BarChart>
