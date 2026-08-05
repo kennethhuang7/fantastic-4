@@ -11,38 +11,71 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getCustomers } from '../utils/api';
 import { useTheme } from '../utils/ThemeContext';
+import CustomerHistoryView from './CustomerHistoryView';
 
 function formatCurrency(value) {
   if (!value) return '$0';
   return `$${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+const PAGE_SIZE = 20;
+
 export default function CustomersView() {
-  const navigate = useNavigate();
   const { startDate, endDate, setStartDate, setEndDate } = useTheme();
-  const [customers,  setCustomers]  = useState([]);
-  const [sortBy,     setSortBy]     = useState('total_spent');
-  const [sortDir,    setSortDir]    = useState('desc');
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [customers,   setCustomers]   = useState([]);
+  const [sortBy,      setSortBy]      = useState('total_spent');
+  const [sortDir,     setSortDir]     = useState('desc');
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
+  const [limit,       setLimit]       = useState(20);
+  const [limitInput,  setLimitInput]  = useState('20');
+  const [maxCustomers, setMaxCustomers] = useState(null);
+  const [page,        setPage]        = useState(1);
 
   useEffect(() => { loadData(); }, []);
 
-  async function loadData() {
+  async function loadData(nextLimit = limit, refetchMax = false) {
     setLoading(true);
     setError(null);
+    setPage(1);
     try {
-      const data = await getCustomers(startDate, endDate);
+      const [data, all] = await Promise.all([
+        getCustomers(startDate, endDate, nextLimit),
+        (maxCustomers === null || refetchMax) ? getCustomers(startDate, endDate, 9999) : Promise.resolve(null),
+      ]);
       setCustomers(data);
+      if (all !== null) setMaxCustomers(all.length);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleApply() {
+    loadData(limit, true);
+  }
+
+  function handleLimitInputChange(e) {
+    // Allow free typing; only clamp on blur or Enter
+    setLimitInput(e.target.value);
+  }
+
+  function commitLimitInput() {
+    const max = maxCustomers ?? 9999;
+    const parsed = parseInt(limitInput, 10);
+    const clamped = isNaN(parsed) ? 20 : Math.min(Math.max(1, parsed), max);
+    setLimitInput(String(clamped));
+    setLimit(clamped);
+    loadData(clamped);
+  }
+
+  function handleLimitKeyDown(e) {
+    if (e.key === 'Enter') commitLimitInput();
   }
 
   // Sort handler — toggles direction if same column, resets to desc if new column
@@ -76,6 +109,11 @@ export default function CustomersView() {
   // Sort indicator helper
   const sortIcon = (col) => sortBy === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
 
+  // Pagination — only active when limit > PAGE_SIZE
+  const paginated = limit > PAGE_SIZE;
+  const totalPages = paginated ? Math.ceil(sorted.length / PAGE_SIZE) : 1;
+  const pageRows   = paginated ? sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : sorted;
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       <Navbar />
@@ -86,9 +124,9 @@ export default function CustomersView() {
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
           <label>To</label>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-          <button className="btn-apply" onClick={loadData}>Apply</button>
+          <button className="btn-apply" onClick={handleApply}>Apply</button>
           <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-muted)' }}>
-            {customers.length} customers
+            {paginated ? `${pageRows.length}/${customers.length}` : `${customers.length}/${customers.length}`} customers
           </span>
         </div>
 
@@ -102,8 +140,39 @@ export default function CustomersView() {
 
         {!loading && !error && (
           <div className="card">
-            <div className="section-title" style={{ marginBottom: 16 }}>
-              Top 20 Customers by {{ name: 'Name', city: 'City', state: 'State', total_orders: 'Orders', total_spent: 'Revenue' }[sortBy]}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div className="section-title">
+                Top {customers.length} Customers by Revenue
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {paginated && (
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    Page {page} of {totalPages}
+                  </span>
+                )}
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Show</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={maxCustomers ?? undefined}
+                  value={limitInput}
+                  onChange={handleLimitInputChange}
+                  onBlur={commitLimitInput}
+                  onKeyDown={handleLimitKeyDown}
+                  style={{
+                    width: 70,
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 6,
+                    padding: '6px 10px',
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                  }}
+                />
+                {maxCustomers !== null && (
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>of {maxCustomers}</span>
+                )}
+              </div>
             </div>
 
             {/*
@@ -153,10 +222,10 @@ export default function CustomersView() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.slice(0, 20).map((c, i) => (
+                {pageRows.map((c, i) => (
                   <tr
                     key={c.customer_id}
-                    onClick={() => navigate(`/customers/${encodeURIComponent(c.customer_id)}`)}
+                    onClick={() => setSelectedCustomerId(c.customer_id)}
                     style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
                   >
                     <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{c.name}</td>
@@ -169,9 +238,65 @@ export default function CustomersView() {
               </tbody>
             </table>
 
+            {paginated && totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, marginTop: 16 }}>
+                <button
+                  className="btn-apply"
+                  onClick={() => setPage(p => p - 1)}
+                  disabled={page === 1}
+                  style={{ opacity: page === 1 ? 0.4 : 1 }}
+                >
+                  ← Prev
+                </button>
+                {(() => {
+                  // Build the visible page items: numbers + '…' sentinels
+                  const items = [];
+                  for (let n = 1; n <= totalPages; n++) {
+                    if (n === 1 || n === totalPages || (n >= page - 1 && n <= page + 1)) {
+                      items.push(n);
+                    } else if (items[items.length - 1] !== '…') {
+                      items.push('…');
+                    }
+                  }
+                  return items.map((item, i) =>
+                    item === '…' ? (
+                      <span key={`ellipsis-${i}`} style={{ padding: '0 4px', color: 'var(--text-muted)', fontSize: 13 }}>…</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => setPage(item)}
+                        style={{
+                          padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)',
+                          background: item === page ? 'var(--accent)' : 'var(--bg-primary)',
+                          color: item === page ? 'white' : 'var(--text-secondary)',
+                          cursor: 'pointer', fontWeight: item === page ? 700 : 400, fontSize: 13,
+                        }}
+                      >
+                        {item}
+                      </button>
+                    )
+                  );
+                })()}
+                <button
+                  className="btn-apply"
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={page === totalPages}
+                  style={{ opacity: page === totalPages ? 0.4 : 1 }}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {selectedCustomerId && (
+        <CustomerHistoryView
+          customerId={selectedCustomerId}
+          onClose={() => setSelectedCustomerId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -23,6 +23,6 @@ export async function getHealth()       { return apiFetch('/health'); }
 export async function getSummary()      { return apiFetch('/franchise/summary'); }
 export async function getOrders(s, e)   { return apiFetch(`/franchise/orders?start=${s}&end=${e}`); }
 export async function getProducts(s, e) { return apiFetch(`/franchise/products?start=${s}&end=${e}`); }
-export async function getCustomers(s,e) { return apiFetch(`/franchise/customers?start=${s}&end=${e}`); }
+export async function getCustomers(s, e, limit = 20) { return apiFetch(`/franchise/customers?start=${s}&end=${e}&limit=${limit}`); }
 export async function getCities(s, e)   { return apiFetch(`/franchise/cities?start=${s}&end=${e}`); }
 export async function getCustomerHistory(customerId) { return apiFetch(`/franchise/customers/${encodeURIComponent(customerId)}/history`); }

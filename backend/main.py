@@ -247,22 +247,20 @@ def get_products(start: str = "2022-01-01", end: str = "2022-12-31"):
 
 
 @app.get("/franchise/customers", tags=["Franchise"])
-def get_customers(start: str = "2022-01-01", end: str = "2022-12-31"):
+def get_customers(start: str = "2022-01-01", end: str = "2022-12-31", limit: int = 20):
     """
-    Returns the top 20 customers by revenue for the given date range.
+    Returns the top N customers by revenue for the given date range.
+
+    Query parameters:
+      start: start date (YYYY-MM-DD)
+      end:   end date (YYYY-MM-DD)
+      limit: number of customers to return (default 20)
 
     Expected response:
     [
         { "customer_id": "C001", "name": "Alice Johnson", "city": "Austin",
           "state": "TX", "total_orders": 14, "total_spent": 1240.50 }
     ]
-
-    TODO: implement this endpoint.
-    Hints:
-      - JOIN fact_orders with dim_customer on customer_id
-      - Only use dim_customer WHERE is_current = 1
-      - GROUP BY customer_id, name, addr_city, addr_state
-      - ORDER BY total_spent DESC, LIMIT 20
     """
     conn = get_connection()
 
@@ -281,8 +279,8 @@ def get_customers(start: str = "2022-01-01", end: str = "2022-12-31"):
           AND f.order_date BETWEEN ? AND ?
         GROUP BY f.customer_id, c.name, c.addr_city, c.addr_state
         ORDER BY total_spent DESC
-        LIMIT 20
-    """, (start, end))
+        LIMIT ?
+    """, (start, end, limit))
 
     return results
 
@@ -334,6 +332,15 @@ def get_customer_history(customer_id: str):
         ORDER BY valid_from ASC
     """, (customer_id,))
 
+    # Total order count and spend via SQL — avoids floating-point accumulation in JS
+    totals_rows = execute_query(conn, """
+        SELECT COUNT(order_id) AS total_orders, ROUND(SUM(amount), 2) AS total_spent
+        FROM fact_orders
+        WHERE customer_id = ?
+    """, (customer_id,))
+
+    totals = totals_rows[0]
+
     # Full order history joined to product name and category
     orders = execute_query(conn, """
         SELECT
@@ -354,6 +361,8 @@ def get_customer_history(customer_id: str):
     return {
         "customer_id":     customer_id,
         "current":         current_rows[0],
+        "total_orders":    totals["total_orders"],
+        "total_spent":     totals["total_spent"],
         "address_history": address_history,
         "orders":          orders,
     }
