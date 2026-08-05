@@ -2,7 +2,7 @@
  * OrdersView.js — Orders Overview page
  *
  * This page shows:
- *   - Stat cards: total revenue, total orders, unique customers
+ *   - Stat cards: total revenue, total orders (both scoped to the selected date range)
  *   - A bar/line chart of monthly revenue over time
  *   - A bar chart of revenue by city/state
  *   - A date range filter
@@ -17,12 +17,11 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Navbar from '../components/Navbar';
-import { getSummary, getOrders, getCities } from '../utils/api';
+import { getOrders, getCities } from '../utils/api';
 import { useTheme } from '../utils/ThemeContext';
 
 export default function OrdersView() {
   const { startDate, endDate, setStartDate, setEndDate } = useTheme();
-  const [summary,   setSummary]   = useState(null);
   const [orders,    setOrders]    = useState([]);
   const [cities,    setCities]    = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -34,12 +33,10 @@ export default function OrdersView() {
     setLoading(true);
     setError(null);
     try {
-      const [s, o, c] = await Promise.all([
-        getSummary(),
+      const [o, c] = await Promise.all([
         getOrders(startDate, endDate),
         getCities(startDate, endDate),
       ]);
-      setSummary(s);
       setOrders(o);
       setCities(c);
     } catch (err) {
@@ -74,26 +71,19 @@ export default function OrdersView() {
         {loading && <div className="loading">Loading orders data…</div>}
 
         {/* ── TODO: Build the UI here ────────────────────────────────────── */}
-        {!loading && !error && (
+        {!loading && !error && (() => {
+          const totalRevenue = orders.reduce((s, o) => s + (o.revenue || 0), 0);
+          const totalOrders  = orders.reduce((s, o) => s + (o.order_count || 0), 0);
+          return (
           <>
-            {/*
-              STEP 1 — Stat cards
-              Show total_revenue, total_orders, unique_customers from summary.
-              Hint: use the .stat-row and .stat-box CSS classes.
-              Available data: summary.total_revenue, summary.total_orders, summary.unique_customers
-            */}
             <div className="stat-row">
               <div className="stat-box">
                 <div className="label">Total Revenue</div>
-                <div className="value">${summary?.total_revenue?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className="value">${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               </div>
               <div className="stat-box">
                 <div className="label">Total Orders</div>
-                <div className="value">{summary?.total_orders?.toLocaleString()}</div>
-              </div>
-              <div className="stat-box">
-                <div className="label">Unique Customers</div>
-                <div className="value">{summary?.unique_customers?.toLocaleString()}</div>
+                <div className="value">{totalOrders.toLocaleString()}</div>
               </div>
             </div>
 
@@ -141,7 +131,8 @@ export default function OrdersView() {
               </ResponsiveContainer>
             </div>
           </>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
