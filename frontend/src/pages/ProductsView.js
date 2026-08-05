@@ -78,50 +78,60 @@ export default function ProductsView() {
             */}
             <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Top 10 Products by Revenue</div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  layout="vertical"
-                  data={products.slice(0, 10).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
-                  margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
-                >
-                  <XAxis type="number" tickFormatter={formatCurrency} />
-                  <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Bar dataKey="revenue" fill="#3b82d4" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {products.length === 0 ? (
+                <div style={{ height: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3l-4 4-4-4"/></svg>
+                  <div style={{ fontSize: 15, fontWeight: 500 }}>No data available</div>
+                  <div style={{ fontSize: 13 }}>The products table is currently unavailable.</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    layout="vertical"
+                    data={products.slice(0, 10).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
+                    margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
+                  >
+                    <XAxis type="number" tickFormatter={formatCurrency} />
+                    <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Bar dataKey="revenue" fill="#3b82d4" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
-            {/*
-              STEP 2 — Products table
-              Show all products in a table: Name | Category | Units Sold | Revenue
-              Hint: use an HTML table or build with divs.
-              Format revenue with the formatCurrency helper above.
-            */}
             <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Product Details</div>
-              <div style={{ overflowY: 'auto', maxHeight: 300 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                      <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Name</th>
-                      <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Category</th>
-                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>Units Sold</th>
-                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>Revenue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((p, i) => (
-                      <tr key={p.product_id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-card)' }}>
-                        <td style={{ padding: '8px 12px' }}>{p.name}</td>
-                        <td style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>{p.category}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right' }}>{p.units_sold.toLocaleString()}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(p.revenue)}</td>
+              {products.length === 0 ? (
+                <div style={{ height: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                  <div style={{ fontSize: 15, fontWeight: 500 }}>No data available</div>
+                  <div style={{ fontSize: 13 }}>The products table is currently unavailable.</div>
+                </div>
+              ) : (
+                <div style={{ overflowY: 'auto', maxHeight: 300 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                        <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Name</th>
+                        <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Category</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px' }}>Units Sold</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px' }}>Revenue</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {products.map((p, i) => (
+                        <tr key={p.product_id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-card)' }}>
+                          <td style={{ padding: '8px 12px' }}>{p.name}</td>
+                          <td style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>{p.category}</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right' }}>{p.units_sold.toLocaleString()}</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(p.revenue)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
           </div>

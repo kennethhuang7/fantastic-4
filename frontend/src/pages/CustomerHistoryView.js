@@ -163,34 +163,42 @@ export default function CustomerHistoryView({ customerId, onClose }) {
                   Showing {Math.min(visibleOrders, data.orders.length)} of {data.orders.length}
                 </span>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                    {['Order ID', 'Date', 'Product', 'Category', 'Qty', 'Amount', 'Status'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Qty' || h === 'Amount' ? 'right' : 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.orders.slice(0, visibleOrders).map((o, i) => {
-                    const sc = STATUS_COLORS[o.status] || { bg: 'var(--bg-primary)', color: 'var(--text-muted)' };
-                    return (
-                      <tr key={o.order_id} style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: 12 }}>{o.order_id}</td>
-                        <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{o.order_date}</td>
-                        <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{o.product_name}</td>
-                        <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{o.category}</td>
-                        <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', textAlign: 'right' }}>{o.quantity}</td>
-                        <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 600, textAlign: 'right' }}>{formatCurrency(o.amount)}</td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <span style={{ background: sc.bg, color: sc.color, padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, textTransform: 'capitalize' }}>{o.status}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {visibleOrders < data.orders.length && (
+              {data.orders.length === 0 ? (
+                <div style={{ padding: '48px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3l-4 4-4-4"/></svg>
+                  <div style={{ fontSize: 15, fontWeight: 500 }}>No order history</div>
+                  <div style={{ fontSize: 13 }}>No orders found for this customer.</div>
+                </div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                      {['Order ID', 'Date', 'Product', 'Category', 'Qty', 'Amount', 'Status'].map(h => (
+                        <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Qty' || h === 'Amount' ? 'right' : 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.orders.slice(0, visibleOrders).map((o, i) => {
+                      const sc = STATUS_COLORS[o.status] || { bg: 'var(--bg-primary)', color: 'var(--text-muted)' };
+                      return (
+                        <tr key={o.order_id} style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)' }}>
+                          <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: 12 }}>{o.order_id}</td>
+                          <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{o.order_date}</td>
+                          <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{o.product_name}</td>
+                          <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{o.category}</td>
+                          <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', textAlign: 'right' }}>{o.quantity}</td>
+                          <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 600, textAlign: 'right' }}>{formatCurrency(o.amount)}</td>
+                          <td style={{ padding: '10px 12px' }}>
+                            <span style={{ background: sc.bg, color: sc.color, padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, textTransform: 'capitalize' }}>{o.status}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+              {data.orders.length > 0 && visibleOrders < data.orders.length && (
                 <div style={{ textAlign: 'center', marginTop: 16 }}>
                   <button className="btn-apply" onClick={() => setVisibleOrders(v => v + 10)}>
                     Show 10 more

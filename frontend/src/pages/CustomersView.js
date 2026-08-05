@@ -190,53 +190,61 @@ export default function CustomersView() {
               Format total_spent with formatCurrency().
             */}
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                  {[
-                    { key: 'name',         label: 'Name'        },
-                    { key: 'city',         label: 'City'        },
-                    { key: 'state',        label: 'State'       },
-                    { key: 'total_orders', label: 'Orders'      },
-                    { key: 'total_spent',  label: 'Total Spent' },
-                  ].map(({ key, label }) => (
-                    <th
-                      key={key}
-                      onClick={() => handleSort(key)}
-                      style={{
-                        padding: '8px 12px',
-                        textAlign: key === 'total_orders' || key === 'total_spent' ? 'right' : 'left',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: sortBy === key ? 'var(--accent)' : 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {label}{sortIcon(key)}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pageRows.map((c, i) => (
-                  <tr
-                    key={c.customer_id}
-                    onClick={() => setSelectedCustomerId(c.customer_id)}
-                    style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                  >
-                    <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{c.name}</td>
-                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{c.city}</td>
-                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{c.state}</td>
-                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', textAlign: 'right' }}>{c.total_orders}</td>
-                    <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 600, textAlign: 'right' }}>{formatCurrency(c.total_spent)}</td>
+            {customers.length === 0 ? (
+              <div style={{ padding: '48px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <div style={{ fontSize: 15, fontWeight: 500 }}>No data available</div>
+                <div style={{ fontSize: 13 }}>The customers table is currently unavailable.</div>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                    {[
+                      { key: 'name',         label: 'Name'        },
+                      { key: 'city',         label: 'City'        },
+                      { key: 'state',        label: 'State'       },
+                      { key: 'total_orders', label: 'Orders'      },
+                      { key: 'total_spent',  label: 'Total Spent' },
+                    ].map(({ key, label }) => (
+                      <th
+                        key={key}
+                        onClick={() => handleSort(key)}
+                        style={{
+                          padding: '8px 12px',
+                          textAlign: key === 'total_orders' || key === 'total_spent' ? 'right' : 'left',
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: sortBy === key ? 'var(--accent)' : 'var(--text-muted)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {label}{sortIcon(key)}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pageRows.map((c, i) => (
+                    <tr
+                      key={c.customer_id}
+                      onClick={() => setSelectedCustomerId(c.customer_id)}
+                      style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                    >
+                      <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{c.name}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{c.city}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{c.state}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', textAlign: 'right' }}>{c.total_orders}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 600, textAlign: 'right' }}>{formatCurrency(c.total_spent)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
             {paginated && totalPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, marginTop: 16 }}>
