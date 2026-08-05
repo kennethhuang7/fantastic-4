@@ -128,10 +128,37 @@ def get_home():
     """
     Returns all data needed to render the homepage dashboard in a single request:
       - summary:            total revenue, orders, unique customers, date range
-      - monthly_revenue:    revenue per month across the full data range
-      - status_breakdown:   order count per status
+      - monthly_revenue:    revenue per month for the most recent year
+      - status_breakdown:   order count per status (all time)
       - top_categories:     top 5 product categories by revenue
       - recent_orders:      5 most recent orders
+
+    Expected response:
+    {
+        "summary": {
+            "total_revenue":    1284750.00,
+            "total_orders":     8432,
+            "unique_customers": 380,
+            "date_range":       { "start": "2022-01-01", "end": "2022-12-31" }
+        },
+        "monthly_revenue": [
+            { "month": "2022-01", "month_name": "January", "year": 2022,
+              "order_count": 842, "revenue": 128450.00 }
+        ],
+        "status_breakdown": [
+            { "status": "delivered", "order_count": 5120 },
+            { "status": "shipped",   "order_count": 2100 },
+            { "status": "pending",   "order_count":  800 },
+            { "status": "cancelled", "order_count":  412 }
+        ],
+        "top_categories": [
+            { "category": "Electronics", "order_count": 1240, "revenue": 412300.00 }
+        ],
+        "recent_orders": [
+            { "order_id": "O001", "order_date": "2022-12-31", "customer_name": "Alice Johnson",
+              "product_name": "Wireless Headphones", "amount": 89.99, "status": "delivered" }
+        ]
+    }
     """
     conn = get_connection()
 
