@@ -105,15 +105,23 @@ export default function OrdersView() {
             */}
             <div className="card" style={{ marginBottom: 20 }}>
               <div className="section-title" style={{ marginBottom: 16 }}>Monthly Revenue</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={orders} margin={{ top: 4, right: 16, left: 16, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="month_name" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                  <YAxis tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                  <Tooltip formatter={v => [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']} />
-                  <Bar dataKey="revenue" fill="var(--accent)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {orders.length === 0 ? (
+                <div style={{ height: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  <div style={{ fontSize: 15, fontWeight: 500 }}>No data available</div>
+                  <div style={{ fontSize: 13 }}>The dates table is currently unavailable.</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={orders} margin={{ top: 4, right: 16, left: 16, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month_name" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                    <YAxis tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                    <Tooltip formatter={v => [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']} />
+                    <Bar dataKey="revenue" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/*
@@ -126,19 +134,27 @@ export default function OrdersView() {
             
             <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Revenue by City</div>
-              <ResponsiveContainer width="100%" height={320}>
-                <BarChart
-                  layout="vertical"
-                  data={cities.slice(0, 10)}
-                  margin={{ top: 4, right: 24, left: 80, bottom: 4 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                  <YAxis type="category" dataKey="city" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={76} />
-                  <Tooltip formatter={v => [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']} />
-                  <Bar dataKey="revenue" fill="var(--blue)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {cities.length === 0 ? (
+                <div style={{ height: 320, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                  <div style={{ fontSize: 15, fontWeight: 500 }}>No data available</div>
+                  <div style={{ fontSize: 13 }}>The customers table is currently unavailable.</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart
+                    layout="vertical"
+                    data={cities.slice(0, 10)}
+                    margin={{ top: 4, right: 24, left: 80, bottom: 4 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                    <XAxis type="number" tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                    <YAxis type="category" dataKey="city" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={76} />
+                    <Tooltip formatter={v => [`$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Revenue']} />
+                    <Bar dataKey="revenue" fill="var(--blue)" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </>
         )}
