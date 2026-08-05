@@ -24,6 +24,8 @@ function formatCurrency(value) {
   return `$${value.toFixed(2)}`;
 }
 
+const CHART_PAGE_SIZE = 10;
+
 export default function ProductsView() {
   const { startDate, endDate, setStartDate, setEndDate } = useTheme();
   const [products,  setProducts]  = useState([]);
@@ -31,6 +33,9 @@ export default function ProductsView() {
   const [error,     setError]     = useState(null);
   const [sortBy,    setSortBy]    = useState('revenue');
   const [sortDir,   setSortDir]   = useState('desc');
+  const [chartLimit,     setChartLimit]     = useState(10);
+  const [chartLimitInput, setChartLimitInput] = useState('10');
+  const [maxProducts, setMaxProducts] = useState(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -40,11 +45,28 @@ export default function ProductsView() {
     try {
       const data = await getProducts(startDate, endDate);
       setProducts(data);
+      setMaxProducts(data.length);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleChartLimitInputChange(e) {
+    setChartLimitInput(e.target.value);
+  }
+
+  function commitChartLimitInput() {
+    const max = maxProducts ?? 9999;
+    const parsed = parseInt(chartLimitInput, 10);
+    const clamped = isNaN(parsed) ? 10 : Math.min(Math.max(1, parsed), max);
+    setChartLimitInput(String(clamped));
+    setChartLimit(clamped);
+  }
+
+  function handleChartLimitKeyDown(e) {
+    if (e.key === 'Enter') commitChartLimitInput();
   }
 
   // Sort handler — toggles direction if same column, resets to desc if new column
@@ -101,11 +123,37 @@ export default function ProductsView() {
               Hint: truncate long product names to 20 chars
             */}
             <div className="card">
-              <div className="section-title" style={{ marginBottom: 16 }}>Top 10 Products by Revenue</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div className="section-title">Top {chartLimit} Products by Revenue</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Show</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={maxProducts ?? undefined}
+                    value={chartLimitInput}
+                    onChange={handleChartLimitInputChange}
+                    onBlur={commitChartLimitInput}
+                    onKeyDown={handleChartLimitKeyDown}
+                    style={{
+                      width: 70,
+                      background: 'var(--bg-primary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 6,
+                      padding: '6px 10px',
+                      color: 'var(--text-primary)',
+                      fontSize: 13,
+                    }}
+                  />
+                  {maxProducts !== null && (
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>of {maxProducts}</span>
+                  )}
+                </div>
+              </div>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   layout="vertical"
-                  data={products.slice(0, 10).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
+                  data={products.slice(0, chartLimit).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
                   margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
                 >
                   <XAxis type="number" tickFormatter={formatCurrency} />
