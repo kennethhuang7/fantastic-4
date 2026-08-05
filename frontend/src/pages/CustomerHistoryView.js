@@ -1,16 +1,13 @@
 /**
- * CustomerHistoryView.js — Customer Detail page (View 4)
+ * CustomerHistoryView.js — Customer Detail modal (View 4)
  *
- * Opened when a user clicks a customer row in CustomersView (View 3).
- * Shows:
- *   - Customer profile header (name, email, current city/state)
- *   - SCD Type 2 address history table
- *   - Full order history table
+ * Rendered as an overlay on top of CustomersView when a customer row is clicked.
+ * Props:
+ *   customerId — the customer to load
+ *   onClose    — called when the user clicks × or the backdrop
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import { getCustomerHistory } from '../utils/api';
 
 function formatCurrency(value) {
@@ -25,46 +22,72 @@ const STATUS_COLORS = {
   cancelled: { bg: '#FFEBEE', color: '#C62828' },
 };
 
-export default function CustomerHistoryView() {
-  const { customerId } = useParams();
-  const navigate = useNavigate();
-  const [data,      setData]      = useState(null);
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState(null);
+export default function CustomerHistoryView({ customerId, onClose }) {
+  const [data,         setData]         = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
   const [visibleOrders, setVisibleOrders] = useState(10);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadData() {
       setLoading(true);
       setError(null);
+      setVisibleOrders(10);
       try {
         const result = await getCustomerHistory(customerId);
-        setData(result);
+        if (!cancelled) setData(result);
       } catch (err) {
-        setError(err.message);
+        if (!cancelled) setError(err.message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     loadData();
+    return () => { cancelled = true; };
   }, [customerId]);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <Navbar />
-      <div className="page">
-
-        {/* ── Back button ──────────────────────────────────────────────── */}
-        <button
-          onClick={() => navigate('/customers')}
-          style={{
-            marginBottom: 20, background: 'none', border: 'none',
-            color: 'var(--accent)', cursor: 'pointer', fontSize: 14,
-            fontWeight: 600, padding: 0,
-          }}
-        >
-          ← Back to Customers
-        </button>
+    // ── Backdrop ─────────────────────────────────────────────────────────────
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+        overflowY: 'auto', padding: '40px 16px',
+      }}
+    >
+      {/* ── Panel — stop clicks propagating to backdrop ─────────────────── */}
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 860,
+          background: 'var(--bg-primary)',
+          borderRadius: 'var(--radius)',
+          border: '1px solid var(--border)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
+          padding: 24,
+        }}
+      >
+        {/* ── Header row ─────────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div className="section-title">
+            {data ? data.current.name : 'Customer Detail'}
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 6, width: 32, height: 32,
+              cursor: 'pointer', fontSize: 18, lineHeight: 1,
+              color: 'var(--text-muted)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            ×
+          </button>
+        </div>
 
         {error && (
           <div style={{ color: '#C62828', padding: 16, background: '#FFEBEE', borderRadius: 8, marginBottom: 16 }}>
@@ -76,13 +99,10 @@ export default function CustomerHistoryView() {
 
         {!loading && !error && data && (
           <>
-            {/* ── Profile header ───────────────────────────────────────── */}
-            <div className="card" style={{ marginBottom: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                <div>
-                  <div className="section-title">{data.current.name}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>{data.current.email}</div>
-                </div>
+            {/* ── Profile stats ──────────────────────────────────────────── */}
+            <div className="card" style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{data.current.email}</div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                     {data.current.addr_city}, {data.current.addr_state}
@@ -90,25 +110,25 @@ export default function CustomerHistoryView() {
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Current address</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 16, flexWrap: 'wrap' }}>
-                <div className="stat-box" style={{ minWidth: 120 }}>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <div className="stat-box" style={{ minWidth: 110 }}>
                   <div className="label">Total Orders</div>
-                  <div className="value">{data.orders.length}</div>
+                  <div className="value">{data.total_orders}</div>
                 </div>
-                <div className="stat-box" style={{ minWidth: 120 }}>
+                <div className="stat-box" style={{ minWidth: 110 }}>
                   <div className="label">Total Spent</div>
-                  <div className="value">{formatCurrency(data.orders.reduce((s, o) => s + (o.amount || 0), 0))}</div>
+                  <div className="value">{formatCurrency(data.total_spent)}</div>
                 </div>
-                <div className="stat-box" style={{ minWidth: 120 }}>
+                <div className="stat-box" style={{ minWidth: 110 }}>
                   <div className="label">Addresses</div>
                   <div className="value">{data.address_history.length}</div>
                 </div>
               </div>
             </div>
 
-            {/* ── SCD Type 2 address history ───────────────────────────── */}
-            <div className="card" style={{ marginBottom: 20 }}>
-              <div className="section-title" style={{ marginBottom: 16 }}>Address History (SCD Type 2)</div>
+            {/* ── SCD Type 2 address history ─────────────────────────────── */}
+            <div className="card" style={{ marginBottom: 16 }}>
+              <div className="section-title" style={{ marginBottom: 12 }}>Address History (SCD Type 2)</div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border)' }}>
@@ -135,9 +155,9 @@ export default function CustomerHistoryView() {
               </table>
             </div>
 
-            {/* ── Order history ─────────────────────────────────────────── */}
+            {/* ── Order history ──────────────────────────────────────────── */}
             <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                 <div className="section-title">Order History</div>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                   Showing {Math.min(visibleOrders, data.orders.length)} of {data.orders.length}
@@ -172,10 +192,7 @@ export default function CustomerHistoryView() {
               </table>
               {visibleOrders < data.orders.length && (
                 <div style={{ textAlign: 'center', marginTop: 16 }}>
-                  <button
-                    className="btn-apply"
-                    onClick={() => setVisibleOrders(v => v + 10)}
-                  >
+                  <button className="btn-apply" onClick={() => setVisibleOrders(v => v + 10)}>
                     Show 10 more
                   </button>
                 </div>
