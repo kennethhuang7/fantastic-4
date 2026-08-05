@@ -25,3 +25,4 @@ export async function getOrders(s, e)   { return apiFetch(`/franchise/orders?sta
 export async function getProducts(s, e) { return apiFetch(`/franchise/products?start=${s}&end=${e}`); }
 export async function getCustomers(s,e) { return apiFetch(`/franchise/customers?start=${s}&end=${e}`); }
 export async function getCities(s, e)   { return apiFetch(`/franchise/cities?start=${s}&end=${e}`); }
+export async function getCustomerHistory(customerId) { return apiFetch(`/franchise/customers/${encodeURIComponent(customerId)}/history`); }

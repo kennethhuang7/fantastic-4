@@ -14,6 +14,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Navbar from '../components/Navbar';
 import { getProducts } from '../utils/api';
+import { useTheme } from '../utils/ThemeContext';
 
 // Format currency helper
 function formatCurrency(value) {
@@ -24,8 +25,7 @@ function formatCurrency(value) {
 }
 
 export default function ProductsView() {
-  const [startDate, setStartDate] = useState('2022-01-01');
-  const [endDate,   setEndDate]   = useState('2022-12-31');
+  const { startDate, endDate, setStartDate, setEndDate } = useTheme();
   const [products,  setProducts]  = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);

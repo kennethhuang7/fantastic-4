@@ -289,6 +289,78 @@ def get_customers(start: str = "2022-01-01", end: str = "2022-12-31"):
     return results
 
 
+@app.get("/franchise/customers/{customer_id}/history", tags=["Franchise"])
+def get_customer_history(customer_id: str):
+    """
+    Returns the full order history and SCD Type 2 address history for a specific customer.
+
+    Path parameters:
+      customer_id: customer identifier (e.g. "C001")
+
+    Expected response:
+    {
+        "customer_id": "C001",
+        "current": { "name": "Alice Johnson", "email": "alice@example.com",
+                     "city": "Austin", "state": "TX" },
+        "address_history": [
+            { "addr_city": "Dallas", "addr_state": "TX",
+              "valid_from": "2021-01-01", "valid_to": "2022-06-30", "is_current": 0 },
+            { "addr_city": "Austin", "addr_state": "TX",
+              "valid_from": "2022-07-01", "valid_to": null, "is_current": 1 }
+        ],
+        "orders": [
+            { "order_id": "O001", "order_date": "2022-03-15", "product_name": "Wireless Headphones",
+              "category": "Electronics", "quantity": 2, "amount": 179.98,
+              "currency": "USD", "status": "delivered" }
+        ]
+    }
+    """
+    conn = get_connection()
+
+    # Current record for the customer profile header
+    current_rows = execute_query(conn, """
+        SELECT name, email, addr_city, addr_state
+        FROM dim_customer
+        WHERE customer_id = ? AND is_current = 1
+        LIMIT 1
+    """, (customer_id,))
+
+    if not current_rows:
+        raise HTTPException(status_code=404, detail=f"Customer '{customer_id}' not found")
+
+    # Full SCD Type 2 address history — all versions, oldest first
+    address_history = execute_query(conn, """
+        SELECT addr_city, addr_state, valid_from, valid_to, is_current
+        FROM dim_customer
+        WHERE customer_id = ?
+        ORDER BY valid_from ASC
+    """, (customer_id,))
+
+    # Full order history joined to product name and category
+    orders = execute_query(conn, """
+        SELECT
+            f.order_id,
+            f.order_date,
+            p.name     AS product_name,
+            p.category,
+            f.quantity,
+            f.amount,
+            f.currency,
+            f.status
+        FROM fact_orders f
+        JOIN dim_product p ON f.product_id = p.product_id
+        WHERE f.customer_id = ?
+        ORDER BY f.order_date DESC
+    """, (customer_id,))
+
+    return {
+        "customer_id":     customer_id,
+        "current":         current_rows[0],
+        "address_history": address_history,
+        "orders":          orders,
+    }
+
+
 @app.get("/franchise/cities", tags=["Franchise"])
 def get_cities(start: str = "2022-01-01", end: str = "2022-12-31"):
     """
