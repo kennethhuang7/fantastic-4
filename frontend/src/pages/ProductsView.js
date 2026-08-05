@@ -29,6 +29,8 @@ export default function ProductsView() {
   const [products,  setProducts]  = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
+  const [sortBy,    setSortBy]    = useState('revenue');
+  const [sortDir,   setSortDir]   = useState('desc');
 
   useEffect(() => { loadData(); }, []);
 
@@ -44,6 +46,28 @@ export default function ProductsView() {
       setLoading(false);
     }
   }
+
+  // Sort handler — toggles direction if same column, resets to desc if new column
+  function handleSort(column) {
+    if (sortBy === column) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDir('desc');
+    }
+  }
+
+  // Apply sort to products array
+  const sorted = [...products].sort((a, b) => {
+    const va = a[sortBy], vb = b[sortBy];
+    if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+    return sortDir === 'asc'
+      ? String(va).localeCompare(String(vb))
+      : String(vb).localeCompare(String(va));
+  });
+
+  // Sort indicator helper
+  const sortIcon = (col) => sortBy === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -104,19 +128,40 @@ export default function ProductsView() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                      <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Name</th>
-                      <th style={{ textAlign: 'left',  padding: '8px 12px' }}>Category</th>
-                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>Units Sold</th>
-                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>Revenue</th>
+                      {[
+                        { key: 'name',        label: 'Name'       },
+                        { key: 'category',    label: 'Category'   },
+                        { key: 'units_sold',  label: 'Units Sold' },
+                        { key: 'revenue',     label: 'Revenue'    },
+                      ].map(({ key, label }) => (
+                        <th
+                          key={key}
+                          onClick={() => handleSort(key)}
+                          style={{
+                            padding: '8px 12px',
+                            textAlign: key === 'units_sold' || key === 'revenue' ? 'right' : 'left',
+                            cursor: 'pointer',
+                            userSelect: 'none',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: sortBy === key ? 'var(--accent)' : 'var(--text-muted)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {label}{sortIcon(key)}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((p, i) => (
+                    {sorted.map((p, i) => (
                       <tr key={p.product_id} style={{ borderBottom: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-card)' }}>
-                        <td style={{ padding: '8px 12px' }}>{p.name}</td>
-                        <td style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>{p.category}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right' }}>{p.units_sold.toLocaleString()}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(p.revenue)}</td>
+                        <td style={{ padding: '8px 12px', color: 'var(--text-primary)', fontWeight: 500 }}>{p.name}</td>
+                        <td style={{ padding: '8px 12px', color: 'var(--text-secondary)' }}>{p.category}</td>
+                        <td style={{ padding: '8px 12px', color: 'var(--text-secondary)', textAlign: 'right' }}>{p.units_sold.toLocaleString()}</td>
+                        <td style={{ padding: '8px 12px', color: 'var(--text-primary)', fontWeight: 600, textAlign: 'right' }}>{formatCurrency(p.revenue)}</td>
                       </tr>
                     ))}
                   </tbody>
