@@ -24,6 +24,8 @@ function formatCurrency(value) {
   return `$${value.toFixed(2)}`;
 }
 
+const CHART_PAGE_SIZE = 10;
+
 export default function ProductsView() {
   const { startDate, endDate, setStartDate, setEndDate } = useTheme();
   const [products,  setProducts]  = useState([]);
@@ -31,6 +33,9 @@ export default function ProductsView() {
   const [error,     setError]     = useState(null);
   const [sortBy,    setSortBy]    = useState('revenue');
   const [sortDir,   setSortDir]   = useState('desc');
+  const [chartLimit,     setChartLimit]     = useState(10);
+  const [chartLimitInput, setChartLimitInput] = useState('10');
+  const [maxProducts, setMaxProducts] = useState(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -40,11 +45,28 @@ export default function ProductsView() {
     try {
       const data = await getProducts(startDate, endDate);
       setProducts(data);
+      setMaxProducts(data.length);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleChartLimitInputChange(e) {
+    setChartLimitInput(e.target.value);
+  }
+
+  function commitChartLimitInput() {
+    const max = maxProducts ?? 9999;
+    const parsed = parseInt(chartLimitInput, 10);
+    const clamped = isNaN(parsed) ? 10 : Math.min(Math.max(1, parsed), max);
+    setChartLimitInput(String(clamped));
+    setChartLimit(clamped);
+  }
+
+  function handleChartLimitKeyDown(e) {
+    if (e.key === 'Enter') commitChartLimitInput();
   }
 
   // Sort handler — toggles direction if same column, resets to desc if new column
@@ -101,7 +123,33 @@ export default function ProductsView() {
               Hint: truncate long product names to 20 chars
             */}
             <div className="card">
-              <div className="section-title" style={{ marginBottom: 16 }}>Top 10 Products by Revenue</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div className="section-title">Top {chartLimit} Products by Revenue</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Show</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={maxProducts ?? undefined}
+                    value={chartLimitInput}
+                    onChange={handleChartLimitInputChange}
+                    onBlur={commitChartLimitInput}
+                    onKeyDown={handleChartLimitKeyDown}
+                    style={{
+                      width: 70,
+                      background: 'var(--bg-primary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 6,
+                      padding: '6px 10px',
+                      color: 'var(--text-primary)',
+                      fontSize: 13,
+                    }}
+                  />
+                  {maxProducts !== null && (
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>of {maxProducts}</span>
+                  )}
+                </div>
+              </div>
               {products.length === 0 ? (
                 <div style={{ height: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3l-4 4-4-4"/></svg>
@@ -109,14 +157,14 @@ export default function ProductsView() {
                   <div style={{ fontSize: 13 }}>The products table is currently unavailable.</div>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={Math.max(300, chartLimit * 30)}>
                   <BarChart
                     layout="vertical"
-                    data={products.slice(0, 10).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
+                    data={products.slice(0, chartLimit).map(p => ({ ...p, name: p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name }))}
                     margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
                   >
                     <XAxis type="number" tickFormatter={formatCurrency} />
-                    <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
+                    <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 12 }} />
                     <Tooltip formatter={(value) => formatCurrency(value)} />
                     <Bar dataKey="revenue" fill="#3b82d4" radius={[0, 4, 4, 0]} />
                   </BarChart>
@@ -124,7 +172,13 @@ export default function ProductsView() {
               )}
             </div>
 
-            <div className="card">
+            {/*
+              STEP 2 — Products table
+              Show all products in a table: Name | Category | Units Sold | Revenue
+              Hint: use an HTML table or build with divs.
+              Format revenue with the formatCurrency helper above.
+            */}
+            <div className="card" style={{ height: 'fit-content' }}>
               <div className="section-title" style={{ marginBottom: 16 }}>Product Details</div>
               {products.length === 0 ? (
                 <div style={{ height: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
