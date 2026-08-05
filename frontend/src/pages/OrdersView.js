@@ -18,10 +18,10 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Navbar from '../components/Navbar';
 import { getSummary, getOrders, getCities } from '../utils/api';
+import { useTheme } from '../utils/ThemeContext';
 
 export default function OrdersView() {
-  const [startDate, setStartDate] = useState('2022-01-01');
-  const [endDate,   setEndDate]   = useState('2022-12-31');
+  const { startDate, endDate, setStartDate, setEndDate } = useTheme();
   const [summary,   setSummary]   = useState(null);
   const [orders,    setOrders]    = useState([]);
   const [cities,    setCities]    = useState([]);
