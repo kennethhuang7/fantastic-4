@@ -28,9 +28,10 @@ const STATUS_COLORS = {
 export default function CustomerHistoryView() {
   const { customerId } = useParams();
   const navigate = useNavigate();
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
+  const [data,      setData]      = useState(null);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
+  const [visibleOrders, setVisibleOrders] = useState(10);
 
   useEffect(() => {
     async function loadData() {
@@ -136,7 +137,12 @@ export default function CustomerHistoryView() {
 
             {/* ── Order history ─────────────────────────────────────────── */}
             <div className="card">
-              <div className="section-title" style={{ marginBottom: 16 }}>Order History</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
+                <div className="section-title">Order History</div>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  Showing {Math.min(visibleOrders, data.orders.length)} of {data.orders.length}
+                </span>
+              </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border)' }}>
@@ -146,7 +152,7 @@ export default function CustomerHistoryView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.orders.map((o, i) => {
+                  {data.orders.slice(0, visibleOrders).map((o, i) => {
                     const sc = STATUS_COLORS[o.status] || { bg: 'var(--bg-primary)', color: 'var(--text-muted)' };
                     return (
                       <tr key={o.order_id} style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)', borderBottom: '1px solid var(--border)' }}>
@@ -164,6 +170,16 @@ export default function CustomerHistoryView() {
                   })}
                 </tbody>
               </table>
+              {visibleOrders < data.orders.length && (
+                <div style={{ textAlign: 'center', marginTop: 16 }}>
+                  <button
+                    className="btn-apply"
+                    onClick={() => setVisibleOrders(v => v + 10)}
+                  >
+                    Show 10 more
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}

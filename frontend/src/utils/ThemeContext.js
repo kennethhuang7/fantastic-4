@@ -3,7 +3,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [dark, setDark] = useState(() => localStorage.getItem('nc-theme') === 'dark');
+  const [dark,      setDark]      = useState(() => localStorage.getItem('nc-theme') === 'dark');
+  const [startDate, setStartDate] = useState('2022-01-01');
+  const [endDate,   setEndDate]   = useState('2022-12-31');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -11,7 +13,7 @@ export function ThemeProvider({ children }) {
   }, [dark]);
 
   return (
-    <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
+    <ThemeContext.Provider value={{ dark, toggle: () => setDark(d => !d), startDate, endDate, setStartDate, setEndDate }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -14,6 +14,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getCustomers } from '../utils/api';
+import { useTheme } from '../utils/ThemeContext';
 
 function formatCurrency(value) {
   if (!value) return '$0';
@@ -22,8 +23,7 @@ function formatCurrency(value) {
 
 export default function CustomersView() {
   const navigate = useNavigate();
-  const [startDate,  setStartDate]  = useState('2022-01-01');
-  const [endDate,    setEndDate]    = useState('2022-12-31');
+  const { startDate, endDate, setStartDate, setEndDate } = useTheme();
   const [customers,  setCustomers]  = useState([]);
   const [sortBy,     setSortBy]     = useState('total_spent');
   const [sortDir,    setSortDir]    = useState('desc');
