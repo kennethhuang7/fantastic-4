@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Navbar from '../components/Navbar';
+import { ProductsSkeleton } from '../components/Skeleton';
 import { getProducts } from '../utils/api';
 import { useTheme } from '../utils/ThemeContext';
 
@@ -110,7 +111,7 @@ export default function ProductsView() {
           </div>
         )}
 
-        {loading && <div className="loading">Loading products data…</div>}
+        {loading && <ProductsSkeleton />}
 
         {!loading && !error && (
           <div className="grid-2">

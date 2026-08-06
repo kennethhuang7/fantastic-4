@@ -17,6 +17,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Navbar from '../components/Navbar';
+import { OrdersSkeleton } from '../components/Skeleton';
 import { getOrders, getCities } from '../utils/api';
 import { useTheme } from '../utils/ThemeContext';
 
@@ -68,7 +69,7 @@ export default function OrdersView() {
         )}
 
         {/* ── Loading state ──────────────────────────────────────────────── */}
-        {loading && <div className="loading">Loading orders data…</div>}
+        {loading && <OrdersSkeleton />}
 
         {/* ── TODO: Build the UI here ────────────────────────────────────── */}
         {!loading && !error && (() => {

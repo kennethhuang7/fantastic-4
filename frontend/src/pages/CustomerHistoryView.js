@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getCustomerHistory } from '../utils/api';
+import { CustomerHistorySkeleton } from '../components/Skeleton';
 
 function formatCurrency(value) {
   if (!value) return '$0';
@@ -95,7 +96,7 @@ export default function CustomerHistoryView({ customerId, onClose }) {
           </div>
         )}
 
-        {loading && <div className="loading">Loading customer history…</div>}
+        {loading && <CustomerHistorySkeleton />}
 
         {!loading && !error && data && (
           <>

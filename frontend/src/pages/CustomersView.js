@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { CustomersSkeleton } from '../components/Skeleton';
 import { getCustomers } from '../utils/api';
 import { useTheme } from '../utils/ThemeContext';
 import CustomerHistoryView from './CustomerHistoryView';
@@ -136,7 +137,7 @@ export default function CustomersView() {
           </div>
         )}
 
-        {loading && <div className="loading">Loading customers…</div>}
+        {loading && <CustomersSkeleton />}
 
         {!loading && !error && (
           <div className="card">

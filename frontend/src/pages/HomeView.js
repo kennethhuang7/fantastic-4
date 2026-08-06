@@ -20,6 +20,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts';
 import Navbar from '../components/Navbar';
+import { HomeSkeleton } from '../components/Skeleton';
 import { getHome } from '../utils/api';
 
 function fmt(value) {
@@ -79,7 +80,7 @@ export default function HomeView() {
           </div>
         )}
 
-        {loading && <div className="loading">Loading dashboard…</div>}
+        {loading && <HomeSkeleton />}
 
         {!loading && !error && data && (() => {
           const { summary, monthly_revenue, status_breakdown, top_categories, recent_orders } = data;
