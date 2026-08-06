@@ -484,7 +484,7 @@ def get_customer_history(customer_id: str):
 
     # Full order history joined to product name and category
     orders = execute_query(conn, """
-        SELECT
+        SELECT DISTINCT
             f.order_id,
             f.order_date,
             p.name     AS product_name,
