@@ -64,6 +64,27 @@ def get_snowflake_connection():
             warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
         )
 
+    # AWS mode — keypair from environment variable
+    if os.getenv('SNOWFLAKE_PRIVATE_KEY_CONTENT'):
+        from cryptography.hazmat.primitives import serialization
+        private_key = serialization.load_pem_private_key(
+            os.getenv('SNOWFLAKE_PRIVATE_KEY_CONTENT').encode(),
+            password=None
+        )
+        private_key_bytes = private_key.private_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        return snowflake.connector.connect(
+            account=os.getenv('SNOWFLAKE_ACCOUNT'),
+            user=os.getenv('SNOWFLAKE_USER'),
+            private_key=private_key_bytes,
+            database=os.getenv('SNOWFLAKE_DATABASE'),
+            schema=os.getenv('SNOWFLAKE_SCHEMA'),
+            warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
+        )
+
     # Local mode — keypair authentication
     private_key_path = os.getenv("SNOWFLAKE_PRIVATE_KEY_PATH")
     if not private_key_path:
