@@ -495,7 +495,7 @@ def get_customer_history(customer_id: str):
             f.status
         FROM fact_orders f
         JOIN (
-            SELECT DISTINCT product_id, name, category FROM dim_product
+            SELECT product_id, name, category FROM dim_product WHERE is_current = 1
         ) p ON f.product_id = p.product_id
         WHERE f.customer_id = ?
         ORDER BY f.order_date DESC
