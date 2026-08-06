@@ -484,7 +484,7 @@ def get_customer_history(customer_id: str):
 
     # Full order history joined to product name and category
     orders = execute_query(conn, """
-        SELECT
+        SELECT DISTINCT
             f.order_id,
             f.order_date,
             p.name     AS product_name,
@@ -495,7 +495,7 @@ def get_customer_history(customer_id: str):
             f.status
         FROM fact_orders f
         JOIN (
-            SELECT product_id, name, category FROM dim_product WHERE is_current = 1
+            SELECT DISTINCT product_id, name, category FROM dim_product
         ) p ON f.product_id = p.product_id
         WHERE f.customer_id = ?
         ORDER BY f.order_date DESC
