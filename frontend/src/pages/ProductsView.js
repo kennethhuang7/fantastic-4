@@ -178,7 +178,7 @@ export default function ProductsView() {
               Hint: use an HTML table or build with divs.
               Format revenue with the formatCurrency helper above.
             */}
-            <div className="card" style={{ height: 'fit-content' }}>
+            <div className="card">
               <div className="section-title" style={{ marginBottom: 16 }}>Product Details</div>
               {products.length === 0 ? (
                 <div style={{ height: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
@@ -187,7 +187,7 @@ export default function ProductsView() {
                   <div style={{ fontSize: 13 }}>The products table is currently unavailable.</div>
                 </div>
               ) : (
-                <div style={{ overflowY: 'auto', maxHeight: 300 }}>
+                <div style={{ overflowY: 'auto', maxHeight: Math.max(300, chartLimit * 30) }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid var(--border)' }}>
