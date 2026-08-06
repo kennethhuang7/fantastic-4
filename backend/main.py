@@ -182,10 +182,13 @@ def get_home():
             d.year || '-' || {pad_month} AS month,
             d.month_name,
             d.year,
-            COUNT(f.order_id)       AS order_count,
-            ROUND(SUM(f.amount), 2) AS revenue
+            COUNT(DISTINCT f.order_id) AS order_count,
+            ROUND(SUM(f.amount), 2)    AS revenue
         FROM fact_orders f
-        JOIN dim_date d ON f.date_key = d.date_key
+        JOIN (
+            SELECT DISTINCT date_key, year, month, month_name
+            FROM dim_date
+        ) d ON f.date_key = d.date_key
         WHERE f.status IN ('delivered', 'shipped')
           AND d.year = (SELECT MAX(year) FROM dim_date)
         GROUP BY d.year, d.month, d.month_name
@@ -320,10 +323,13 @@ def get_orders(start: str = "2022-01-01", end: str = "2022-12-31"):
         SELECT
             d.year || '-' || {pad_month} AS month,
             d.month_name,
-            COUNT(f.order_id) AS order_count,
-            SUM(f.amount)     AS revenue
+            COUNT(DISTINCT f.order_id) AS order_count,
+            SUM(f.amount)              AS revenue
         FROM fact_orders f
-        JOIN dim_date d ON f.date_key = d.date_key
+        JOIN (
+            SELECT DISTINCT date_key, year, month, month_name
+            FROM dim_date
+        ) d ON f.date_key = d.date_key
         WHERE f.status IN ('delivered', 'shipped')
           AND f.order_date BETWEEN ? AND ?
         GROUP BY d.year, d.month, d.month_name
