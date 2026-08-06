@@ -39,12 +39,29 @@ function Sk({ h = 14, w = '100%', r = 6, style: extra = {} }) {
   return <div className="nc-sk" style={{ height: h, width: w, borderRadius: r, ...extra }} />;
 }
 
-// Mirrors .stat-box: border-left accent, padding 16px 20px
+// Mirrors .stat-box: icon pill left + label/value body right
 function SkStatBox() {
   return (
-    <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <Sk h={11} w="55%" />
-      <Sk h={28} w="65%" />
+    <div className="stat-box">
+      <div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--border)', flexShrink: 0 }} />
+      <div className="stat-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <Sk h={11} w="55%" />
+        <Sk h={22} w="65%" />
+      </div>
+    </div>
+  );
+}
+
+// Mirrors .stat-box with a sub-line (e.g. Total Revenue full amount, or MoM %)
+function SkStatBoxSub() {
+  return (
+    <div className="stat-box">
+      <div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--border)', flexShrink: 0 }} />
+      <div className="stat-body" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+        <Sk h={11} w="60%" />
+        <Sk h={22} w="55%" />
+        <Sk h={11} w="75%" />
+      </div>
     </div>
   );
 }
@@ -114,22 +131,10 @@ export function HomeSkeleton() {
       <Sk h={13} w={260} style={{ marginBottom: 20 }} />
 
       <div className="stat-row">
-        {/* Total Revenue — has label + value + sub-line */}
-        <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Sk h={11} w="55%" />
-          <Sk h={28} w="65%" />
-          <Sk h={11} w="80%" />
-        </div>
-        {/* Total Orders */}
-        <SkStatBox />
-        {/* Unique Customers */}
-        <SkStatBox />
-        {/* Last month revenue — label + value + MoM % line (conditional but almost always present) */}
-        <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Sk h={11} w="70%" />
-          <Sk h={28} w="55%" />
-          <Sk h={11} w="60%" />
-        </div>
+        <SkStatBoxSub />  {/* Total Revenue — value + full amount sub-line */}
+        <SkStatBox />     {/* Total Orders */}
+        <SkStatBox />     {/* Unique Customers */}
+        <SkStatBoxSub />  {/* Revenue — last month + MoM % sub-line */}
       </div>
 
       <div className="grid-2" style={{ marginBottom: 20 }}>
@@ -166,12 +171,13 @@ export function HomeSkeleton() {
 }
 
 // OrdersView:
-//   2 stat boxes | card(Monthly Revenue h=260) | card(Revenue by City h=320)
+//   2 stat boxes (no sub-line) | card(Monthly Revenue h=260) | card(Revenue by City h=320)
 export function OrdersSkeleton() {
   return (
     <>
       <div className="stat-row">
-        <SkStatBox /><SkStatBox />
+        <SkStatBox />  {/* Total Revenue */}
+        <SkStatBox />  {/* Total Orders */}
       </div>
       <SkChartCard title_w="35%" height={260} style={{ marginBottom: 20 }} />
       <SkChartCard title_w="30%" height={320} />
@@ -225,15 +231,9 @@ export function CustomerHistorySkeleton() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <div className="stat-box" style={{ minWidth: 110, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Sk h={11} w="55%" /><Sk h={28} w="65%" />
-          </div>
-          <div className="stat-box" style={{ minWidth: 110, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Sk h={11} w="55%" /><Sk h={28} w="65%" />
-          </div>
-          <div className="stat-box" style={{ minWidth: 110, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Sk h={11} w="55%" /><Sk h={28} w="65%" />
-          </div>
+          <div className="stat-box" style={{ minWidth: 160 }}><div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--border)', flexShrink: 0 }} /><div className="stat-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}><Sk h={11} w="55%" /><Sk h={22} w="65%" /></div></div>
+          <div className="stat-box" style={{ minWidth: 160 }}><div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--border)', flexShrink: 0 }} /><div className="stat-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}><Sk h={11} w="55%" /><Sk h={22} w="65%" /></div></div>
+          <div className="stat-box" style={{ minWidth: 160 }}><div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--border)', flexShrink: 0 }} /><div className="stat-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}><Sk h={11} w="55%" /><Sk h={22} w="65%" /></div></div>
         </div>
       </div>
 

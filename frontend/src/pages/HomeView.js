@@ -101,27 +101,47 @@ export default function HomeView() {
               {/* ── KPI stat cards ───────────────────────────────────────── */}
               <div className="stat-row">
                 <div className="stat-box">
-                  <div className="label">Total Revenue</div>
-                  <div className="value">{fmt(summary.total_revenue)}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{fmtFull(summary.total_revenue)}</div>
+                  <div className="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                  <div className="stat-body">
+                    <div className="label">Total Revenue</div>
+                    <div className="value">{fmt(summary.total_revenue)}</div>
+                    <div className="sub">{fmtFull(summary.total_revenue)}</div>
+                  </div>
                 </div>
                 <div className="stat-box">
-                  <div className="label">Total Orders</div>
-                  <div className="value">{summary.total_orders.toLocaleString()}</div>
+                  <div className="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  </div>
+                  <div className="stat-body">
+                    <div className="label">Total Orders</div>
+                    <div className="value">{summary.total_orders.toLocaleString()}</div>
+                  </div>
                 </div>
                 <div className="stat-box">
-                  <div className="label">Unique Customers</div>
-                  <div className="value">{summary.unique_customers.toLocaleString()}</div>
+                  <div className="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
+                  <div className="stat-body">
+                    <div className="label">Unique Customers</div>
+                    <div className="value">{summary.unique_customers.toLocaleString()}</div>
+                  </div>
                 </div>
                 {lastMonth && (
                   <div className="stat-box">
-                    <div className="label">Revenue — {lastMonth.month_name}</div>
-                    <div className="value">{fmt(lastMonth.revenue)}</div>
-                    {momPct != null && (
-                      <div style={{ fontSize: 12, marginTop: 4, color: momPct >= 0 ? '#2E7D32' : '#C62828', fontWeight: 600 }}>
-                        {momPct >= 0 ? '▲' : '▼'} {Math.abs(momPct).toFixed(1)}% vs prev month
-                      </div>
-                    )}
+                    <div className="stat-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <div className="stat-body">
+                      <div className="label">Revenue — {lastMonth.month_name}</div>
+                      <div className="value">{fmt(lastMonth.revenue)}</div>
+                      {momPct != null && (
+                        <div className="sub" style={{ color: momPct >= 0 ? '#2E7D32' : '#C62828', fontWeight: 600 }}>
+                          {momPct >= 0 ? '▲' : '▼'} {Math.abs(momPct).toFixed(1)}% vs prev month
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
