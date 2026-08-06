@@ -197,7 +197,7 @@ def get_home():
 
     # Order status breakdown (all statuses)
     status_breakdown = execute_query(conn, """
-        SELECT status, COUNT(order_id) AS order_count
+        SELECT status, COUNT(DISTINCT order_id) AS order_count
         FROM fact_orders
         GROUP BY status
         ORDER BY order_count DESC
@@ -207,10 +207,12 @@ def get_home():
     top_categories = execute_query(conn, """
         SELECT
             p.category,
-            COUNT(f.order_id)       AS order_count,
-            ROUND(SUM(f.amount), 2) AS revenue
+            COUNT(DISTINCT f.order_id) AS order_count,
+            ROUND(SUM(f.amount), 2)    AS revenue
         FROM fact_orders f
-        JOIN dim_product p ON f.product_id = p.product_id
+        JOIN (
+            SELECT DISTINCT product_id, category FROM dim_product
+        ) p ON f.product_id = p.product_id
         WHERE f.status IN ('delivered', 'shipped')
         GROUP BY p.category
         ORDER BY revenue DESC
@@ -227,8 +229,12 @@ def get_home():
             f.amount,
             f.status
         FROM fact_orders f
-        JOIN dim_customer c ON f.customer_id = c.customer_id AND c.is_current = 1
-        JOIN dim_product  p ON f.product_id  = p.product_id
+        JOIN (
+            SELECT DISTINCT customer_id, name FROM dim_customer WHERE is_current = 1
+        ) c ON f.customer_id = c.customer_id
+        JOIN (
+            SELECT DISTINCT product_id, name FROM dim_product
+        ) p ON f.product_id = p.product_id
         ORDER BY f.order_date DESC
         LIMIT 5
     """)
@@ -366,7 +372,9 @@ def get_products(start: str = "2022-01-01", end: str = "2022-12-31"):
             SUM(f.quantity) AS units_sold,
             SUM(f.amount)   AS revenue
         FROM fact_orders f
-        JOIN dim_product p ON f.product_id = p.product_id
+        JOIN (
+            SELECT DISTINCT product_id, name, category FROM dim_product
+        ) p ON f.product_id = p.product_id
         WHERE f.status IN ('delivered', 'shipped')
           AND f.order_date BETWEEN ? AND ?
         GROUP BY f.product_id, p.name, p.category
@@ -400,12 +408,15 @@ def get_customers(start: str = "2022-01-01", end: str = "2022-12-31", limit: int
             c.name,
             c.addr_city  AS city,
             c.addr_state AS state,
-            COUNT(f.order_id) AS total_orders,
-            SUM(f.amount)     AS total_spent
+            COUNT(DISTINCT f.order_id) AS total_orders,
+            SUM(f.amount)              AS total_spent
         FROM fact_orders f
-        JOIN dim_customer c ON f.customer_id = c.customer_id
+        JOIN (
+            SELECT DISTINCT customer_id, name, addr_city, addr_state
+            FROM dim_customer
+            WHERE is_current = 1
+        ) c ON f.customer_id = c.customer_id
         WHERE f.status IN ('delivered', 'shipped')
-          AND c.is_current = 1
           AND f.order_date BETWEEN ? AND ?
         GROUP BY f.customer_id, c.name, c.addr_city, c.addr_state
         ORDER BY total_spent DESC
@@ -456,7 +467,7 @@ def get_customer_history(customer_id: str):
 
     # Full SCD Type 2 address history — all versions, oldest first
     address_history = execute_query(conn, """
-        SELECT addr_city, addr_state, valid_from, valid_to, is_current
+        SELECT DISTINCT addr_city, addr_state, valid_from, valid_to, is_current
         FROM dim_customer
         WHERE customer_id = ?
         ORDER BY valid_from ASC
@@ -464,7 +475,7 @@ def get_customer_history(customer_id: str):
 
     # Total order count and spend via SQL — avoids floating-point accumulation in JS
     totals_rows = execute_query(conn, """
-        SELECT COUNT(order_id) AS total_orders, ROUND(SUM(amount), 2) AS total_spent
+        SELECT COUNT(DISTINCT order_id) AS total_orders, ROUND(SUM(amount), 2) AS total_spent
         FROM fact_orders
         WHERE customer_id = ?
     """, (customer_id,))
@@ -483,7 +494,9 @@ def get_customer_history(customer_id: str):
             f.currency,
             f.status
         FROM fact_orders f
-        JOIN dim_product p ON f.product_id = p.product_id
+        JOIN (
+            SELECT DISTINCT product_id, name, category FROM dim_product
+        ) p ON f.product_id = p.product_id
         WHERE f.customer_id = ?
         ORDER BY f.order_date DESC
     """, (customer_id,))
@@ -521,12 +534,15 @@ def get_cities(start: str = "2022-01-01", end: str = "2022-12-31"):
         SELECT
             c.addr_city  AS city,
             c.addr_state AS state,
-            COUNT(f.order_id) AS order_count,
-            SUM(f.amount)     AS revenue
+            COUNT(DISTINCT f.order_id) AS order_count,
+            SUM(f.amount)              AS revenue
         FROM fact_orders f
-        JOIN dim_customer c ON f.customer_id = c.customer_id
+        JOIN (
+            SELECT DISTINCT customer_id, addr_city, addr_state
+            FROM dim_customer
+            WHERE is_current = 1
+        ) c ON f.customer_id = c.customer_id
         WHERE f.status IN ('delivered', 'shipped')
-          AND c.is_current = 1
           AND f.order_date BETWEEN ? AND ?
         GROUP BY c.addr_city, c.addr_state
         ORDER BY revenue DESC
