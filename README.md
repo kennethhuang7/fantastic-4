@@ -103,7 +103,7 @@ npm start
 | `OrdersView.js` | Revenue analytics |
 | `ProductsView.js` | Product analytics |
 | `CustomersView.js` | Customer list |
-| 'CustomerHistoryView.js` | Customer information |
+| `CustomerHistoryView.js` | Customer information |
 
 
 ### App Consultant
