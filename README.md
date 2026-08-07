@@ -1,6 +1,6 @@
 # NovaCart Account Dashboard
 
-## URL: [NovaCart](https://nlbmyoub-se58322-snowflake-containers-adrianm.snowflakecomputing.app/"Go to NovaCart")
+## URL: [NovaCart](https://nlbmyoub-se58322-snowflake-containers-adrianm.snowflakecomputing.app/ "Go to NovaCart")
 
 ### HC&D Associates Capstone — App Developer + App Consultant
 
