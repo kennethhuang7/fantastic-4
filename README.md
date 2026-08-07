@@ -4,7 +4,22 @@
 
 ### HC&D Associates Capstone — App Developer + App Consultant
 
-Your starting point for the NovaCart Account Dashboard capstone. The infrastructure is already set up. Your job is to implement the API endpoints and the frontend UI.
+# Team Members
+Developers:
+
+Danny Mendler
+
+Kenneth Huang
+
+Ivan Li
+
+Consultants
+
+Joon Jung
+
+Nifemi Ayodele-Esho
+
+Yaire Lopez-Quiroz
 
 ---
 
@@ -142,20 +157,3 @@ export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 ```bash
 docker build --no-cache --platform linux/amd64 ...
 ```
-
-## Team Members
-Developers:
-
-Danny Mendler
-
-Kenneth Huang
-
-Ivan Li
-
-Consultants
-
-Joon Jung
-
-Nifemi Ayodele-Esho
-
-Yaire Lopez-Quiroz
