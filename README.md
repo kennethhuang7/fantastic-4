@@ -5,20 +5,14 @@
 ### HC&D Associates Capstone — App Developer + App Consultant
 
 # Team Members
-Developers:
-
-Danny Mendler
-
-Kenneth Huang
-
+### Developers:  
+Danny Mendler,
+Kenneth Huang,
 Ivan Li
 
-Consultants
-
-Joon Jung
-
-Nifemi Ayodele-Esho
-
+### Consultants:  
+Joon Jung,
+Nifemi Ayodele-Esho,
 Yaire Lopez-Quiroz
 
 ---
