@@ -87,6 +87,7 @@ npm start
 
 | Endpoint | Description |
 |---|---|
+| `GET /franchise/home` | Returns KPI and summary analytics and data|
 | `GET /franchise/summary` | Total revenue, orders, unique customers |
 | `GET /franchise/orders` | Monthly order volume and revenue |
 | `GET /franchise/products` | Top 10 products by revenue |
