@@ -11,27 +11,28 @@ Your starting point for the NovaCart Account Dashboard capstone. The infrastruct
 ## What's in this repo
 
 ```
-backend/          Python + FastAPI API skeleton
-  main.py         ← Your main work — implement the 5 TODO endpoints
-  connection.py   ← Already done — handles local dev + SPCS automatically
+backend/
+  main.py
+  connection.py
   requirements.txt
   Dockerfile
 
-frontend/         React 18 frontend skeleton
-  src/pages/      ← Your main work — implement the UI in these 3 files
+frontend/
+  src/pages/
     OrdersView.js
     ProductsView.js
     CustomersView.js
-  src/components/ ← Already done — Navbar, ServiceStatus
-  src/utils/      ← Already done — api.js, ThemeContext.js
+    CustomerHistoryView.js
+    HomeView.js
+  src/components/
+  src/utils/
   Dockerfile
 
 router/           NGINX reverse proxy — do not modify
 data/
-  novacart_gold.db  ← SQLite database for local development
-                      30,000 orders · 400 customers · 15 products
+  novacart_gold.db
 
-build-and-push.sh   ← Run this on Day 4 to deploy to SPCS
+build-and-push.sh
 ```
 
 ---
@@ -69,7 +70,7 @@ npm start
 
 ---
 
-## Your Work
+## Our Work
 
 ### App Developer
 
@@ -82,25 +83,24 @@ npm start
 | `GET /franchise/products` | Top 10 products by revenue |
 | `GET /franchise/customers` | Top 20 customers by revenue |
 | `GET /franchise/cities` | Revenue by city and state |
-
-Each endpoint has a `TODO` comment with hints and the expected response format.
+| `GET /franchise/{customer_id}/history` | Detailed customer information |
 
 **Frontend** — open the three files in `frontend/src/pages/` and implement the UI:
 
-| File | What to build |
+| File | Description |
 |---|---|
-| `OrdersView.js` | Stat cards + monthly revenue chart + cities chart |
-| `ProductsView.js` | Products bar chart + products table |
-| `CustomersView.js` | Sortable customers table |
+| `HomeView.js` | KPI cards and other summary statistics |
+| `OrdersView.js` | Revenue analytics |
+| `ProductsView.js` | Product analytics |
+| `CustomersView.js` | Customer list |
+| 'CustomerHistoryView.js` | Customer information |
 
-Each file has `TODO` comments explaining exactly what to build and which data is available.
 
 ### App Consultant
 
-- Write the requirements document before any code is written (end of Day 1)
-- Validate each endpoint against requirements before marking it done
-- Write the Solution Design Document by Day 4
-- Prepare and lead the client presentation on Day 5
+- Documented each step of the development process
+- Prepared presentations and led discussions with clients
+- Curated documentation for the clients
 
 ---
 
@@ -121,23 +121,6 @@ dim_product    product_id, name, category, price, updated_at
 dim_date       date_key, full_date, year, quarter, month,
                month_name, day_of_week, is_weekend
 ```
-
-Use `status IN ('delivered', 'shipped')` for revenue calculations.
-
----
-
-## Deploying to SPCS
-
-When your endpoints are working and the UI is connected, on Day 4:
-
-```bash
-export REPO_URL=<provided by your facilitator>
-export GROUP=<your team number>
-
-bash build-and-push.sh
-```
-
-Then notify your facilitator — they will deploy your services and give you the public URL.
 
 ---
 
@@ -160,7 +143,19 @@ export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 docker build --no-cache --platform linux/amd64 ...
 ```
 
-## Team Members (testing git)
+## Team Members
+Developers:
+
 Danny Mendler
+
 Kenneth Huang
+
 Ivan Li
+
+Consultants
+
+Joon Jung
+
+Nifemi Ayodele-Esho
+
+Yaire Lopez-Quiroz
