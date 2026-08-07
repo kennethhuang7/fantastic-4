@@ -42,6 +42,7 @@ app = FastAPI(
         "Built on top of the Gold data layer produced by the Data Engineering team."
     ),
     version="1.0.0",
+    root_path="" if os.getenv("CLIENT_VALIDATION", "Dev") == "Dev" else "/api",
 )
 
 PORT              = int(os.getenv("PORT", 8000))
